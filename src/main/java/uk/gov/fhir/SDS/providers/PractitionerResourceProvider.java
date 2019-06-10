@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.fhir.SDS.support.ProviderResponseLibrary;
 
+import javax.naming.directory.SearchResult;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -60,7 +62,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
 
             Exchange exchange = template.send("direct:LDAPPractitioner", ExchangePattern.InOut, new Processor() {
                 public void process(Exchange exchange) throws Exception {
-                    exchange.getIn().setBody("(uid=test)");
+                    exchange.getIn().setBody("(objectClass=nhsOrgPerson,sn=dbwgbwdia)");
                 }
             });
             log.info("camelEnd");
@@ -70,6 +72,10 @@ public class PractitionerResourceProvider implements IResourceProvider {
             }
             if (exchange.getIn().getBody() instanceof String) {
                 log.info("Body = " + exchange.getIn().getBody());
+            }
+            if (exchange.getIn().getBody() instanceof Collection) {
+                Collection<SearchResult> data = (Collection) exchange.getIn().getBody();
+                log.info("Body = " + data.toString());
             }
 
             if (reader != null) {

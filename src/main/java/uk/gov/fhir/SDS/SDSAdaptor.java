@@ -5,6 +5,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContextNameStrategy;
+import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,12 @@ public class SDSAdaptor {
 
                 camelContext.setNameStrategy(new DefaultCamelContextNameStrategy("SDS-LDAP"));
 
+                final org.apache.camel.impl.SimpleRegistry registry = new org.apache.camel.impl.SimpleRegistry();
+                final org.apache.camel.impl.CompositeRegistry compositeRegistry = new org.apache.camel.impl.CompositeRegistry();
+                compositeRegistry.addRegistry(camelContext.getRegistry());
+                compositeRegistry.addRegistry(registry);
+                ((org.apache.camel.impl.DefaultCamelContext) camelContext).setRegistry(compositeRegistry);
+
                 Properties
                         props = new Properties();
                 props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -84,9 +91,8 @@ public class SDSAdaptor {
                 props.setProperty(Context.REFERRAL, "ignore");
 
 
-                final org.apache.camel.impl.SimpleRegistry registry = new org.apache.camel.impl.SimpleRegistry();
                 try {
-                    registry.put("myldap", new InitialLdapContext(props, null));
+                    registry.put("fhirldap", new InitialLdapContext(props, null));
                 } catch (NamingException ex) {
                     log.error(ex.getMessage());
                 }
