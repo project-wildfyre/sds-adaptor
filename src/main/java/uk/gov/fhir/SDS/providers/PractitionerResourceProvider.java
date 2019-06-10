@@ -81,7 +81,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
                 reader.close();
                 log.error("Output = " + buffer.toString());
             }
-            log.error("JSON Parse failed " + ex.getMessage());
+            log.error("Apace Camel request error: " + ex.getMessage());
             throw new InternalErrorException(ex.getMessage());
         }
         if (resource instanceof Practitioner) {

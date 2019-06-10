@@ -28,12 +28,12 @@ public class CamelLDAPRoute extends RouteBuilder {
         Properties
                 props = new Properties();
         props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        props.setProperty(Context.PROVIDER_URL, "ldap://localhost:389");
+        props.setProperty(Context.PROVIDER_URL, "ldap://192.168.128.11:389");
         props.setProperty(Context.URL_PKG_PREFIXES, "com.sun.jndi.url");
         props.setProperty(Context.REFERRAL, "ignore");
-        props.setProperty(Context.SECURITY_AUTHENTICATION, "simple");
-        props.setProperty(Context.SECURITY_PRINCIPAL, "cn=Manager");
-        props.setProperty(Context.SECURITY_CREDENTIALS, "secret");
+       // props.setProperty(Context.SECURITY_AUTHENTICATION, "simple");
+       // props.setProperty(Context.SECURITY_PRINCIPAL, "cn=Manager");
+       // props.setProperty(Context.SECURITY_CREDENTIALS, "secret");
 
         SimpleRegistry reg = new SimpleRegistry();
         try {
