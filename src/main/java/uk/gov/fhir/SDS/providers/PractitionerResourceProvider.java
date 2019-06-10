@@ -62,7 +62,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
 
             Exchange exchange = template.send("direct:LDAPPractitioner", ExchangePattern.InOut, new Processor() {
                 public void process(Exchange exchange) throws Exception {
-                    exchange.getIn().setBody("(objectClass=nhsOrgPerson,sn=dbwgbwdia)");
+                    exchange.getIn().setBody("(sn=dbwgbwdia)");
                 }
             });
             log.info("camelEnd");
@@ -75,6 +75,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
             }
             if (exchange.getIn().getBody() instanceof Collection) {
                 Collection<SearchResult> data = (Collection) exchange.getIn().getBody();
+                log.info("Body = " + exchange.getIn().getBody());
                 log.info("Body = " + data.toString());
             }
 
