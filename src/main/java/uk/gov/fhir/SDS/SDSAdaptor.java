@@ -6,6 +6,8 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContextNameStrategy;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,6 +20,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import uk.gov.fhir.SDS.support.CorsFilter;
+import uk.gov.fhir.SDS.support.ProviderResponseLibrary;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.InitialLdapContext;
+import java.util.Properties;
 
 
 @SpringBootApplication
@@ -25,6 +33,8 @@ public class SDSAdaptor {
 
     @Autowired
     ApplicationContext context;
+
+    private static final Logger log = LoggerFactory.getLogger(SDSAdaptor.class);
 
 
     public static void main(String[] args) {
@@ -65,6 +75,21 @@ public class SDSAdaptor {
             public void beforeApplicationStart(CamelContext camelContext) {
 
                 camelContext.setNameStrategy(new DefaultCamelContextNameStrategy("SDS-LDAP"));
+
+                Properties
+                        props = new Properties();
+                props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                props.setProperty(Context.PROVIDER_URL, "ldap://192.168.128.11:389");
+                props.setProperty(Context.URL_PKG_PREFIXES, "com.sun.jndi.url");
+                props.setProperty(Context.REFERRAL, "ignore");
+
+
+                final org.apache.camel.impl.SimpleRegistry registry = new org.apache.camel.impl.SimpleRegistry();
+                try {
+                    registry.put("myldap", new InitialLdapContext(props, null));
+                } catch (NamingException ex) {
+                    log.error(ex.getMessage());
+                }
 
             }
 

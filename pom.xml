@@ -16,9 +16,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot-version>2.1.1.RELEASE</spring-boot-version>
         <hapi-fhir-version>3.8.0</hapi-fhir-version>
-        <hapi-hl7v2-version>2.3</hapi-hl7v2-version>
         <care-connect-version>3.5.4</care-connect-version>
-        <camel-version>2.23.1</camel-version>
+        <camel-version>2.24.0</camel-version>
         <hawtio.version>2.5.0</hawtio.version>
     </properties>
 
@@ -267,13 +266,6 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring-javaconfig</artifactId>
             <scope>provided</scope>
-            <version>${camel-version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jackson-starter</artifactId>
             <version>${camel-version}</version>
         </dependency>
 

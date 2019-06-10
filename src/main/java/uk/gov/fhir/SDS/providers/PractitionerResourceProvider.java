@@ -45,7 +45,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
 
 
     @Read
-    public Practitioner read(HttpServletRequest request,@IdParam IdType internalId) throws Exception {
+    public Practitioner read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
 
 
         ProducerTemplate template = context.createProducerTemplate();
@@ -55,22 +55,27 @@ public class PractitionerResourceProvider implements IResourceProvider {
         Reader reader = null;
         try {
             InputStream inputStream = null;
-            if (request != null) {
-                inputStream = (InputStream) template.sendBody("direct:FHIRPractitioner",
-                        ExchangePattern.InOut, request);
-            } else {
-                Exchange exchange = template.send("direct:FHIRPractitioner",ExchangePattern.InOut, new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        exchange.getIn().setBody("(uid=test)");
-                    }
-                });
+
+            log.info("camelStart");
+
+            Exchange exchange = template.send("direct:LDAPPractitioner", ExchangePattern.InOut, new Processor() {
+                public void process(Exchange exchange) throws Exception {
+                    exchange.getIn().setBody("(uid=test)");
+                }
+            });
+            log.info("camelEnd");
+            if (exchange.getIn().getBody() instanceof InputStream) {
                 inputStream = (InputStream) exchange.getIn().getBody();
+                reader = new InputStreamReader(inputStream);
             }
-            reader = new InputStreamReader(inputStream);
+            if (exchange.getIn().getBody() instanceof String) {
+                log.info("Body = " + exchange.getIn().getBody());
+            }
+
             if (reader != null) {
                 resource = ctx.newJsonParser().parseResource(reader);
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             if (reader != null) {
                 StringBuilder buffer = new StringBuilder();
                 char[] arr = new char[8 * 1024];
@@ -88,18 +93,19 @@ public class PractitionerResourceProvider implements IResourceProvider {
             practitioner = (Practitioner) resource;
         } else {
             ProviderResponseLibrary
-                    .createException(ctx,resource);
+                    .createException(ctx, resource);
         }
 
         return practitioner;
 
     }
+
     @Search
     public List<Practitioner> search(HttpServletRequest request,
-                                  @OptionalParam(name = Practitioner.SP_IDENTIFIER) TokenParam identifier
+                                     @OptionalParam(name = Practitioner.SP_IDENTIFIER) TokenParam identifier
     ) throws Exception {
 
-       return null;
+        return null;
     }
 
 
