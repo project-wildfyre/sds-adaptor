@@ -18,14 +18,6 @@ public class CamelLDAPRoute extends RouteBuilder {
 
 
 
-
-
-        from("direct:LDAPPractitioner")
-                .routeId("Practitioner")
-                .log("Practitioner call")
-                .to("ldap:fhirldap?base=o=nhs")
-                .to("log:uk.gov.fhir.sds?level=INFO&showHeaders=true&showExchangeId=true");
-
     }
 
 

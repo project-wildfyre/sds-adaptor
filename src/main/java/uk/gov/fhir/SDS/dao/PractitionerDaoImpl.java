@@ -3,6 +3,7 @@ package uk.gov.fhir.SDS.dao;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
+import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class PractitionerDaoImpl {
 
     private static final Logger log = LoggerFactory.getLogger(PractitionerDaoImpl.class);
 
-    private class PersonAttributesMapper implements AttributesMapper {
+    private class PractitonerAttributesMapper implements AttributesMapper {
 
         javax.naming.directory.Attributes attributes;
         @Override
@@ -65,19 +66,32 @@ public class PractitionerDaoImpl {
         }
     }
 
+    public Practitioner read(IdType internalId) {
 
-    public List<Practitioner> getAllPersons(TokenParam identifier,
+
+
+        log.info(internalId.getIdPart());
+        List<Practitioner> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(uid="+internalId.getIdPart()+"))", new PractitonerAttributesMapper());
+
+        if (practitioners.size()>0) {
+            return practitioners.get(0);
+        }
+        return null;
+    }
+
+
+    public List<Practitioner> search(TokenParam identifier,
                                              StringParam surname) {
 
         if (identifier != null) {
             log.info(identifier.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(nhsOCSPRCode=*"+identifier.getValue()+"*))", new PersonAttributesMapper());
+            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(nhsOCSPRCode=*"+identifier.getValue()+"*))", new PractitonerAttributesMapper());
         }
         if (surname != null) {
             log.info(surname.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(sn=*"+surname.getValue()+"*))", new PersonAttributesMapper());
+            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(sn=*"+surname.getValue()+"*))", new PractitonerAttributesMapper());
         }
-        return ldapTemplate.search("ou=People", "(objectclass=person)", new PersonAttributesMapper());
+        return ldapTemplate.search("ou=People", "(objectclass=person)", new PractitonerAttributesMapper());
     }
 
 }

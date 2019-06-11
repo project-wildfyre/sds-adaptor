@@ -5,12 +5,14 @@ import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import org.apache.camel.*;
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.PractitionerRole;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
@@ -54,65 +56,19 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
     @Read
     public PractitionerRole read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
 
-
-        ProducerTemplate template = context.createProducerTemplate();
-
-        PractitionerRole practitionerRole = null;
-        IBaseResource resource = null;
-        Reader reader = null;
-        try {
-            InputStream inputStream = null;
-
-
-            log.info("camelStart");
-            Exchange exchange = template.send("direct:LDAPPractitionerRole", ExchangePattern.InOut, new Processor() {
-                public void process(Exchange exchange) throws Exception {
-                    exchange.getIn().setBody("(sn=dbwgbwdia)");
-                }
-            });
-            log.info("camelEnd");
-            if (exchange.getIn().getBody() instanceof InputStream) {
-                inputStream = (InputStream) exchange.getIn().getBody();
-                reader = new InputStreamReader(inputStream);
-            }
-            if (exchange.getIn().getBody() instanceof String) {
-                log.info("Body = " + exchange.getIn().getBody());
-            }
-            if (exchange.getIn().getBody() instanceof Collection) {
-                Collection<SearchResult> data = (Collection) exchange.getIn().getBody();
-                log.info("Body = " + exchange.getIn().getBody());
-                log.info("Body = " + data.toString());
-            }
-
-            if (reader != null) {
-                resource = ctx.newJsonParser().parseResource(reader);
-            }
-        } catch (Exception ex) {
-            if (reader != null) {
-                StringBuilder buffer = new StringBuilder();
-                char[] arr = new char[8 * 1024];
-                int numCharsRead;
-                while ((numCharsRead = reader.read(arr, 0, arr.length)) != -1) {
-                    buffer.append(arr, 0, numCharsRead);
-                }
-                reader.close();
-                log.error("Output = " + buffer.toString());
-            }
-            log.error("Apace Camel request error: " + ex.getMessage());
-            throw new InternalErrorException(ex.getMessage());
-        }
-        if (resource instanceof PractitionerRole) {
-            practitionerRole = (PractitionerRole) resource;
-        } else {
-            ProviderResponseLibrary
-                    .createException(ctx, resource);
-        }
-
-        return practitionerRole;
+        return practitionerRoleDao.read(internalId);
 
     }
 
+    @Search
+    public List<PractitionerRole> search(HttpServletRequest request,
+                                     @OptionalParam(name = PractitionerRole.SP_PRACTITIONER) ReferenceParam practitioner
 
+    ) throws Exception {
+
+        log.info("boing Start");
+        return practitionerRoleDao.search(practitioner);
+    }
 
 
 

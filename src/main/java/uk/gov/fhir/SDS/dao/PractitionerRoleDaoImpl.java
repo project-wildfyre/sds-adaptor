@@ -1,8 +1,9 @@
 package uk.gov.fhir.SDS.dao;
 
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import org.hl7.fhir.dstu3.model.PractitionerRole;
+import org.hl7.fhir.dstu3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +22,27 @@ public class PractitionerRoleDaoImpl {
 
     private static final Logger log = LoggerFactory.getLogger(PractitionerRoleDaoImpl.class);
 
-    private class PersonAttributesMapper implements AttributesMapper {
+    private class PractitionerRoleAttributesMapper implements AttributesMapper {
 
         javax.naming.directory.Attributes attributes;
         @Override
         public Object mapFromAttributes(javax.naming.directory.Attributes attributes) throws NamingException {
             this.attributes = attributes;
             PractitionerRole practitionerRole = new PractitionerRole();
-            if (hasAttribute("uid")) {
-                practitionerRole.setId(getAttribute("uid"));
+            if (hasAttribute("uniqueIdentifier")) {
+                practitionerRole.setId(getAttribute("uniqueIdentifier"));
             } else {
                 return null;
+            }
+
+            if (hasAttribute("nhsIDCode")) {
+                CodeableConcept code = practitionerRole.addCode();
+
+                code.addCoding().setSystem("https://fhir.nhs.uk/STU3/CodeSystem/CareConnect-SDSJobRoleName-1")
+                        .setCode(getAttribute("nhsIDCode"));
+                if (hasAttribute("nhsRoles")) {
+                    code.getCodingFirstRep().setDisplay(getAttribute("nhsRoles"));
+                }
             }
 
 
@@ -54,19 +65,25 @@ public class PractitionerRoleDaoImpl {
         }
     }
 
+    public PractitionerRole read(IdType internalId) {
 
-    public List<PractitionerRole> getRoles(TokenParam identifier,
-                                             StringParam surname) {
+        log.info(internalId.getIdPart());
+        List<PractitionerRole> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uniqueIdentifier="+internalId.getIdPart()+"))", new PractitionerRoleAttributesMapper());
 
-        if (identifier != null) {
-            log.info(identifier.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(nhsOCSPRCode=*"+identifier.getValue()+"*))", new PersonAttributesMapper());
+        if (practitioners.size()>0) {
+            return practitioners.get(0);
         }
-        if (surname != null) {
-            log.info(surname.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(sn=*"+surname.getValue()+"*))", new PersonAttributesMapper());
+        return null;
+    }
+
+    public List<PractitionerRole> search(ReferenceParam practitioner) {
+
+
+        if (practitioner != null) {
+            log.info(practitioner.getValue());
+            return ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uid="+practitioner.getValue()+"))", new PractitionerRoleAttributesMapper());
         }
-        return ldapTemplate.search("ou=People", "(objectclass=person)", new PersonAttributesMapper());
+        return ldapTemplate.search("ou=People", "(objectclass=person)", new PractitionerRoleAttributesMapper());
     }
 
 }

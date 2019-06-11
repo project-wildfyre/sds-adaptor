@@ -54,61 +54,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
     @Read
     public Practitioner read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
 
-
-        ProducerTemplate template = context.createProducerTemplate();
-
-        Practitioner practitioner = null;
-        IBaseResource resource = null;
-        Reader reader = null;
-        try {
-            InputStream inputStream = null;
-
-
-            log.info("camelStart");
-            Exchange exchange = template.send("direct:LDAPPractitioner", ExchangePattern.InOut, new Processor() {
-                public void process(Exchange exchange) throws Exception {
-                    exchange.getIn().setBody("(sn=dbwgbwdia)");
-                }
-            });
-            log.info("camelEnd");
-            if (exchange.getIn().getBody() instanceof InputStream) {
-                inputStream = (InputStream) exchange.getIn().getBody();
-                reader = new InputStreamReader(inputStream);
-            }
-            if (exchange.getIn().getBody() instanceof String) {
-                log.info("Body = " + exchange.getIn().getBody());
-            }
-            if (exchange.getIn().getBody() instanceof Collection) {
-                Collection<SearchResult> data = (Collection) exchange.getIn().getBody();
-                log.info("Body = " + exchange.getIn().getBody());
-                log.info("Body = " + data.toString());
-            }
-
-            if (reader != null) {
-                resource = ctx.newJsonParser().parseResource(reader);
-            }
-        } catch (Exception ex) {
-            if (reader != null) {
-                StringBuilder buffer = new StringBuilder();
-                char[] arr = new char[8 * 1024];
-                int numCharsRead;
-                while ((numCharsRead = reader.read(arr, 0, arr.length)) != -1) {
-                    buffer.append(arr, 0, numCharsRead);
-                }
-                reader.close();
-                log.error("Output = " + buffer.toString());
-            }
-            log.error("Apace Camel request error: " + ex.getMessage());
-            throw new InternalErrorException(ex.getMessage());
-        }
-        if (resource instanceof Practitioner) {
-            practitioner = (Practitioner) resource;
-        } else {
-            ProviderResponseLibrary
-                    .createException(ctx, resource);
-        }
-
-        return practitioner;
+        return practitionerDao.read(internalId);
 
     }
 
@@ -123,7 +69,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
         if (name != null) {
             surname = name;
         }
-        return practitionerDao.getAllPersons(identifier, surname);
+        return practitionerDao.search(identifier, surname);
     }
 
 
