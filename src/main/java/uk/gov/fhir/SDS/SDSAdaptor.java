@@ -16,6 +16,8 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -65,6 +67,27 @@ public class SDSAdaptor {
     @Primary
     public FhirContext FhirContextBean() {
         return FhirContext.forDstu3();
+    }
+
+
+    @Bean
+    LdapContextSource initialLdapContext() throws NamingException{
+        Properties
+                props = new Properties();
+        props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        props.setProperty(Context.PROVIDER_URL, );
+        props.setProperty(Context.URL_PKG_PREFIXES, "com.sun.jndi.url");
+        props.setProperty(Context.REFERRAL, "ignore");
+
+        LdapContextSource context = new LdapContextSource();
+        context.setUrl("ldap://192.168.128.11:389");
+        context.setBase();
+    }
+
+    @Bean
+    LdapTemplate ldapTemplate(InitialLdapContext context) {
+        LdapTemplate template = new LdapTemplate();
+        template.setContextSource(context);
     }
 
     @Bean
