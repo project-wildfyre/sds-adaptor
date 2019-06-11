@@ -6,13 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.ldap.InitialLdapContext;
-import java.io.InputStream;
-import java.util.Properties;
-
-
 @Component
 public class CamelLDAPRoute extends RouteBuilder {
 

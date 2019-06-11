@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import uk.gov.fhir.SDS.providers.ConformanceProvider;
 import uk.gov.fhir.SDS.providers.PractitionerResourceProvider;
+import uk.gov.fhir.SDS.providers.PractitionerRoleResourceProvider;
 import uk.gov.fhir.SDS.support.ServerInterceptor;
 
 
@@ -62,6 +63,7 @@ public class RestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
         }
         List<IResourceProvider> resourceProviders = new ArrayList<>();
         resourceProviders.add(appCtx.getBean(PractitionerResourceProvider.class));
+        resourceProviders.add(appCtx.getBean(PractitionerRoleResourceProvider.class));
 
         setFhirContext(appCtx.getBean(FhirContext.class));
 

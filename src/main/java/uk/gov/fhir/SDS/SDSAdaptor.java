@@ -72,23 +72,19 @@ public class SDSAdaptor {
 
 
     @Bean
-    LdapContextSource initialLdapContext() throws NamingException{
-        Properties
-                props = new Properties();
-        props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        props.setProperty(Context.PROVIDER_URL, );
-        props.setProperty(Context.URL_PKG_PREFIXES, "com.sun.jndi.url");
-        props.setProperty(Context.REFERRAL, "ignore");
+    LdapContextSource ldapContextSource() throws NamingException{
 
         LdapContextSource context = new LdapContextSource();
         context.setUrl("ldap://192.168.128.11:389");
-        context.setBase();
+        context.setBase("o=nhs");
+        return context;
     }
 
     @Bean
-    LdapTemplate ldapTemplate(InitialLdapContext context) {
+    LdapTemplate ldapTemplate(LdapContextSource context) {
         LdapTemplate template = new LdapTemplate();
         template.setContextSource(context);
+        return template;
     }
 
     @Bean
@@ -128,6 +124,16 @@ public class SDSAdaptor {
             }
         };
     }
+
+    /*
+
+     <bean id="contextSource"
+    class="org.springframework.ldap.transaction.compensating.manager.TransactionAwareContextSourceProxy">
+      <constructor-arg ref="contextSourceTarget" />
+   </bean>
+
+
+     */
 
 
     @Bean
