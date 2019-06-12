@@ -61,15 +61,12 @@ public class PractitionerResourceProvider implements IResourceProvider {
     @Search
     public List<Practitioner> search(HttpServletRequest request,
                                      @OptionalParam(name = Practitioner.SP_IDENTIFIER)  TokenParam identifier,
-                                             @OptionalParam(name = Practitioner.SP_FAMILY) StringParam surname,
+                                     @OptionalParam(name = Practitioner.SP_FAMILY) StringParam surname,
                                      @OptionalParam(name = Practitioner.SP_NAME) StringParam name
     ) throws Exception {
 
         log.info("boing Start");
-        if (name != null) {
-            surname = name;
-        }
-        return practitionerDao.search(identifier, surname);
+        return practitionerDao.search(identifier, surname, name);
     }
 
 

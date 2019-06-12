@@ -3,8 +3,10 @@ package uk.gov.fhir.SDS.dao;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
+import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Practitioner;
+import org.hl7.fhir.dstu3.model.PractitionerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,12 @@ public class PractitionerDaoImpl {
     @Autowired
     private LdapTemplate ldapTemplate;
 
+    @Autowired
+    private PractitionerRoleDaoImpl practitionerRoleDao;
+
     private static final Logger log = LoggerFactory.getLogger(PractitionerDaoImpl.class);
 
-    private class PractitonerAttributesMapper implements AttributesMapper {
+    private class PractitionerAttributesMapper implements AttributesMapper {
 
         javax.naming.directory.Attributes attributes;
         @Override
@@ -36,10 +41,21 @@ public class PractitionerDaoImpl {
             } else {
                 return null;
             }
-            if (hasAttribute("sn") && hasAttribute("cn")) {
-                practitioner.addName()
-                        .setFamily(getAttribute("sn"))
-                        .addGiven(getAttribute("cn"));
+            if (hasAttribute("sn") || hasAttribute("givenName")) {
+                HumanName name = practitioner.addName();
+
+                if (hasAttribute("sn")) {
+                        name.setFamily(getAttribute("sn"));
+                }
+                if (hasAttribute("givenName")) {
+                        name.addGiven(getAttribute("givenName"));
+                }
+                if (hasAttribute("personalTitle")) {
+                    name.addPrefix(getAttribute("personalTitle"));
+                }
+                if (hasAttribute("cn")) {
+                    name.setText(getAttribute("cn"));
+                }
             }
             if (hasAttribute("nhsOCSPRCode")) {
                 practitioner.addIdentifier()
@@ -71,7 +87,7 @@ public class PractitionerDaoImpl {
 
 
         log.info(internalId.getIdPart());
-        List<Practitioner> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(uid="+internalId.getIdPart()+"))", new PractitonerAttributesMapper());
+        List<Practitioner> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(uid="+internalId.getIdPart()+"))", new PractitionerAttributesMapper());
 
         if (practitioners.size()>0) {
             return practitioners.get(0);
@@ -81,17 +97,33 @@ public class PractitionerDaoImpl {
 
 
     public List<Practitioner> search(TokenParam identifier,
-                                             StringParam surname) {
+                                             StringParam surname, StringParam name) {
 
+        String ldapFilter = "";
         if (identifier != null) {
             log.info(identifier.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(nhsOCSPRCode=*"+identifier.getValue()+"*))", new PractitonerAttributesMapper());
+            List<PractitionerRole> roles = practitionerRoleDao.search(identifier,null);
+            if (roles.size()== 0) return null;
+
+            PractitionerRole role = roles.get(0);
+            if (!role.hasPractitioner() || !role.getPractitioner().hasReference()) return null;
+
+            String[] ids = role.getPractitioner().getReference().split("/");
+            if (ids[1]== null) return null;
+            ldapFilter = ldapFilter + "(uid="+ids[1]+")";
+            log.info(ldapFilter);
         }
         if (surname != null) {
             log.info(surname.getValue());
-            return ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(sn=*"+surname.getValue()+"*))", new PractitonerAttributesMapper());
+            ldapFilter = ldapFilter + "(sn=*"+surname.getValue()+"*)";
         }
-        return ldapTemplate.search("ou=People", "(objectclass=person)", new PractitonerAttributesMapper());
+        if (name != null) {
+            log.info(name.getValue());
+            ldapFilter = ldapFilter + "(cn=*"+name.getValue()+"*)";
+        }
+        if (ldapFilter.isEmpty()) return null;
+        ldapFilter = "(&(objectclass=nhsPerson)"+ldapFilter+")";
+        return ldapTemplate.search("ou=People", ldapFilter, new PractitionerAttributesMapper());
     }
 
 }
