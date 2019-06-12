@@ -12,6 +12,7 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.naming.NamingException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component
@@ -19,6 +20,9 @@ public class PractitionerRoleDaoImpl {
 
     @Autowired
     private LdapTemplate ldapTemplate;
+
+    @Autowired
+    private OrganizationDaoImpl organizationDao;
 
     private static final Logger log = LoggerFactory.getLogger(PractitionerRoleDaoImpl.class);
 
@@ -38,6 +42,19 @@ public class PractitionerRoleDaoImpl {
             if (hasAttribute("uid")) {
                 practitionerRole.getPractitioner().setReference("Practitioner/"+getAttribute("uid"));
             }
+            if (hasAttribute("cn")) {
+                practitionerRole.getPractitioner().setDisplay(getAttribute("cn"));
+            }
+
+            if (hasAttribute("nhsOrgOpenDate")) {
+                practitionerRole.setActive(true);
+
+            }
+            if (hasAttribute("nhsOrgCloseDate")) {
+                practitionerRole.setActive(false);
+
+            }
+
             if (hasAttribute("nhsCountry")) {
                 Extension country = new Extension();
                 country.setUrl("https://fhir.gov.uk/Extension/nhsCountry");
@@ -48,12 +65,21 @@ public class PractitionerRoleDaoImpl {
                 country.setValue(code);
                 practitionerRole.addExtension(country);
             }
-
             if (hasAttribute("nhsIDCode")) {
+                practitionerRole.getOrganization().setReference("Organization/"+getAttribute("nhsIDCode"));
+                /*
+                Organization org = organizationDao.read(false, new IdType(getAttribute("nhsIDCode")));
+                if (org != null && org.hasName()) {
+                    practitionerRole.getPractitioner().setDisplay(org.getName());
+                }
+
+                 */
+            }
+            if (hasAttribute("nhsRoles")) {
                 CodeableConcept code = practitionerRole.addCode();
 
-                code.addCoding().setSystem("https://fhir.nhs.uk/STU3/CodeSystem/CareConnect-SDSJobRoleName-1")
-                        .setCode(getAttribute("nhsIDCode"));
+                code.addCoding().setSystem("https://fhir.nhs.uk/STU3/CodeSystem/CareConnect-SDSJobRoleName-1");
+
                 if (hasAttribute("nhsRoles")) {
 
                     String[] roles = getAttribute("nhsRoles").split(":");
@@ -102,7 +128,7 @@ public class PractitionerRoleDaoImpl {
         return null;
     }
 
-    public List<PractitionerRole> search( TokenParam identifier,ReferenceParam practitioner) {
+    public List<PractitionerRole> search( TokenParam identifier,ReferenceParam practitioner, ReferenceParam organisation) {
 
         String ldapFilter = "";
 
@@ -113,6 +139,10 @@ public class PractitionerRoleDaoImpl {
         if (practitioner != null) {
             log.info(practitioner.getValue());
            ldapFilter = ldapFilter + "(uid="+practitioner.getValue()+")";
+        }
+        if (organisation != null) {
+            log.info(organisation.getValue());
+            ldapFilter = ldapFilter + "(nhsIdCode="+organisation.getValue()+")";
         }
         if (ldapFilter.isEmpty()) {
             return null;

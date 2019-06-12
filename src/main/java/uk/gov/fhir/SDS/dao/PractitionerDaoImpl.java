@@ -102,7 +102,7 @@ public class PractitionerDaoImpl {
         String ldapFilter = "";
         if (identifier != null) {
             log.info(identifier.getValue());
-            List<PractitionerRole> roles = practitionerRoleDao.search(identifier,null);
+            List<PractitionerRole> roles = practitionerRoleDao.search(identifier,null, null);
             if (roles.size()== 0) return null;
 
             PractitionerRole role = roles.get(0);

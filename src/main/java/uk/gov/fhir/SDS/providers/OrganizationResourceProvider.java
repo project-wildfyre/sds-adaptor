@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
@@ -46,18 +47,19 @@ public class OrganizationResourceProvider implements IResourceProvider {
     @Read
     public Organization read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
 
-        return organisationDao.read(internalId);
+        return organisationDao.read(true, internalId);
 
     }
 
     @Search
     public List<Organization> search(HttpServletRequest request,
                                      @OptionalParam(name = Organization.SP_IDENTIFIER)  TokenParam identifier,
-                                     @OptionalParam(name = Organization.SP_NAME) StringParam name
+                                     @OptionalParam(name = Organization.SP_NAME) StringParam name,
+                                     @OptionalParam(name = Organization.SP_PARTOF) ReferenceParam partOf
     ) throws Exception {
 
 
-        return organisationDao.search(identifier,  name);
+        return organisationDao.search(true, identifier,  name, partOf);
     }
 
 
