@@ -2,11 +2,11 @@ In this directory
 
 mvn install 
 
-docker build . -t nrl-adaptor
+docker build . -t sds-adaptor
 
-docker tag nrl-adaptor thorlogic/nrl-adaptor
+docker tag sds-adaptor thorlogic/sds-adaptor
 
-docker push thorlogic/nrl-adaptor
+docker push thorlogic/sds-adaptor
 
 
 

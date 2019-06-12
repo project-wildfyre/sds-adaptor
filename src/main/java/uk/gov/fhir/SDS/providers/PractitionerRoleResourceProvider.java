@@ -60,7 +60,6 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
 
     ) throws Exception {
 
-        log.info("boing Start");
         return practitionerRoleDao.search(identifier, practitioner);
     }
 

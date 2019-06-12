@@ -65,7 +65,7 @@ public class PractitionerResourceProvider implements IResourceProvider {
                                      @OptionalParam(name = Practitioner.SP_NAME) StringParam name
     ) throws Exception {
 
-        log.info("boing Start");
+
         return practitionerDao.search(identifier, surname, name);
     }
 
