@@ -59,9 +59,25 @@ public class EndpointDaoImpl {
                 );
             }
             if (hasAttribute("nhsMhsSvcIA")) {
-                endpoint.getConnectionType().setSystem("https://fhir.nhs.uk/Ids/nhsMHsSN").setCode(getAttribute("nhsMhsSvcIA"));
-            }
 
+                Coding code = new Coding();
+                code.setCode(getAttribute("nhsMhsSvcIA"))
+                        .setSystem("https://fhir.nhs.uk/Ids/nhsMhsSvcIA");
+
+                endpoint.getConnectionType().addExtension(
+                        new Extension()
+                                .setUrl("https://fhir.nhs.uk/Extension/nhsMhsSvcIA")
+                                .setValue(code)
+                );
+            }
+            if (hasAttribute("nhsEPInteractionType")) {
+                switch (getAttribute("nhsEPInteractionType")) {
+                    case "HL7" :
+                        endpoint.getConnectionType().setSystem("http://terminology.hl7.org/CodeSystem/endpoint-connection-type").setCode(getAttribute("hl7v3"));
+                        break;
+
+                }
+            }
             if (hasAttribute("nhsMhsEndPoint")) {
                 endpoint.setAddress(getAttribute("nhsMhsEndPoint"));
             }
