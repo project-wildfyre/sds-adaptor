@@ -1,6 +1,6 @@
 package uk.gov.fhir.SDS.dao;
 
-import ca.uhn.fhir.rest.annotation.OptionalParam;
+
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import org.hl7.fhir.dstu3.model.HumanName;
@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
-import uk.gov.fhir.SDS.SDSAdaptor;
-
 import javax.naming.NamingException;
 import java.util.List;
 

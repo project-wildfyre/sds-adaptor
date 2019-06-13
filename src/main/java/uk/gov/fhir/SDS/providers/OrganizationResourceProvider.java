@@ -55,11 +55,14 @@ public class OrganizationResourceProvider implements IResourceProvider {
     public List<Organization> search(HttpServletRequest request,
                                      @OptionalParam(name = Organization.SP_IDENTIFIER)  TokenParam identifier,
                                      @OptionalParam(name = Organization.SP_NAME) StringParam name,
-                                     @OptionalParam(name = Organization.SP_PARTOF) ReferenceParam partOf
+                                     @OptionalParam(name = Organization.SP_PARTOF) ReferenceParam partOf,
+                                     @OptionalParam(name = Organization.SP_ADDRESS_POSTALCODE) StringParam postCode,
+                                     @OptionalParam(name = Organization.SP_ADDRESS) StringParam address,
+                                     @OptionalParam(name = Organization.SP_TYPE) TokenParam type
     ) throws Exception {
 
 
-        return organisationDao.search(true, identifier,  name, partOf);
+        return organisationDao.search(true, identifier,  name, partOf, postCode, address, type);
     }
 
 

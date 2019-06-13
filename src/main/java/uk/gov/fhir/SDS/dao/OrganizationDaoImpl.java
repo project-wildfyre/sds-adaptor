@@ -176,7 +176,10 @@ public class OrganizationDaoImpl {
 
     public List<Organization> search(boolean getParent, TokenParam identifier,
                                              StringParam name,
-                                     ReferenceParam partOf) {
+                                     ReferenceParam partOf,
+                                     StringParam postCode,
+                                     StringParam address,
+                                     TokenParam type) {
 
         String base = "ou=Organisations";
         String ldapFilter = "";
@@ -193,6 +196,18 @@ public class OrganizationDaoImpl {
             base = "uniqueIdentifier="+partOf.getValue() +", " + base;
             ldapFilter = ldapFilter + "(!(nhsIDCode="+partOf.getValue()+"))";
             log.info(base);
+            log.info(ldapFilter);
+        }
+        if (postCode != null) {
+            ldapFilter = ldapFilter + "(postalCode=*"+postCode.getValue()+"*)";
+            log.info(ldapFilter);
+        }
+        if (address != null) {
+            ldapFilter = ldapFilter + "(postalAddress=*"+address.getValue()+"*)";
+            log.info(ldapFilter);
+        }
+        if (type != null) {
+            ldapFilter = ldapFilter + "(=*"+type.getValue()+"*)";
             log.info(ldapFilter);
         }
 
