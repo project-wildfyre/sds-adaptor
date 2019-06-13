@@ -38,26 +38,7 @@ public class OrganizationDaoImpl {
         public Object mapFromAttributes(javax.naming.directory.Attributes attributes) throws NamingException {
             this.attributes = attributes;
 
-/*
-            NamingEnumeration e = attributes.getAll();
 
-// Loop through the attributes
-            while (e.hasMoreElements())
-            {
-// Get the next attribute
-                Attribute attr = (Attribute) e.nextElement();
-
-// Print out the attribute's value(s)
-                System.out.print(attr.getID()+" = ");
-                for (int i=0; i < attr.size(); i++)
-                {
-                    if (i > 0) System.out.print(", ");
-                    System.out.print(attr.get(i));
-                }
-                System.out.println();
-            }
-
- */
             Organization organisation = new Organization();
             if (hasAttribute("uniqueidentifier")) {
                 organisation.setId(getAttribute("uniqueidentifier"));

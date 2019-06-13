@@ -54,12 +54,12 @@ public class EndpointResourceProvider implements IResourceProvider {
 
     @Search
     public List<Endpoint> search(HttpServletRequest request,
-                               //      @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam identifier,
+                                 @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam identifier,
                                  @OptionalParam(name = Endpoint.SP_ORGANIZATION) ReferenceParam organisation
     ) throws Exception {
 
 
-        return endpointDao.search(null, organisation);
+        return endpointDao.search(identifier, organisation);
     }
 
 }
