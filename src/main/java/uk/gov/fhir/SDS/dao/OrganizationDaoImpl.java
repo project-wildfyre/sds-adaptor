@@ -15,6 +15,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -179,7 +180,8 @@ public class OrganizationDaoImpl {
                                      ReferenceParam partOf,
                                      StringParam postCode,
                                      StringParam address,
-                                     TokenParam type) {
+                                     TokenParam type,
+                                     TokenParam active) {
 
         String base = "ou=Organisations";
         String ldapFilter = "";
@@ -207,16 +209,34 @@ public class OrganizationDaoImpl {
             log.info(ldapFilter);
         }
         if (type != null) {
-            ldapFilter = ldapFilter + "(=*"+type.getValue()+"*)";
+            ldapFilter = ldapFilter + "(nhsOrgTypeCode="+type.getValue()+")";
             log.info(ldapFilter);
         }
 
         if (ldapFilter.isEmpty()) return null;
         String ldapFilterOrg = "(&"+ldapFilter+")";
 
-        List<Organization> org = ldapTemplate.search(base, ldapFilterOrg, new OrganizationAttributesMapper(getParent));
+        List<Organization> orgs = ldapTemplate.search(base, ldapFilterOrg, new OrganizationAttributesMapper(getParent));
 
-        return org;
+        if (active != null) {
+            List<Organization> nOrgs = new ArrayList<>();
+
+            for (Organization org : orgs)
+            switch (active.getValue()) {
+                case "true":
+                    if (org.getActive()) {
+                        nOrgs.add(org);
+                    }
+                    break;
+                case "false":
+                    if (!org.getActive()) {
+                        nOrgs.add(org);
+                    }
+                    break;
+            }
+            return nOrgs;
+        }
+        return orgs;
     }
 
 }

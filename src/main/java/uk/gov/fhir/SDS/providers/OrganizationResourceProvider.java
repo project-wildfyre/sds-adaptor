@@ -58,11 +58,12 @@ public class OrganizationResourceProvider implements IResourceProvider {
                                      @OptionalParam(name = Organization.SP_PARTOF) ReferenceParam partOf,
                                      @OptionalParam(name = Organization.SP_ADDRESS_POSTALCODE) StringParam postCode,
                                      @OptionalParam(name = Organization.SP_ADDRESS) StringParam address,
-                                     @OptionalParam(name = Organization.SP_TYPE) TokenParam type
+                                     @OptionalParam(name = Organization.SP_TYPE) TokenParam type,
+                                     @OptionalParam(name = Organization.SP_ACTIVE) TokenParam active
     ) throws Exception {
 
 
-        return organisationDao.search(true, identifier,  name, partOf, postCode, address, type);
+        return organisationDao.search(true, identifier,  name, partOf, postCode, address, type, active);
     }
 
 
