@@ -1,5 +1,6 @@
 package uk.gov.fhir.SDS.dao;
 
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import org.hl7.fhir.dstu3.model.*;
@@ -116,13 +117,17 @@ public class EndpointDaoImpl {
     }
 
 
-    public List<Endpoint> search(TokenParam identifier) {
+    public List<Endpoint> search(TokenParam identifier, ReferenceParam organisation) {
 
         String ldapFilter = "";
 
         if (identifier != null) {
             log.info(identifier.getValue());
             ldapFilter = ldapFilter + "(nhsIDCode="+identifier.getValue()+")";
+        }
+        if (organisation != null) {
+            log.info(organisation.getValue());
+            ldapFilter = ldapFilter + "(nhsIDCode="+organisation.getValue()+")";
         }
         if (ldapFilter.isEmpty()) return null;
         ldapFilter = "(&(objectclass=nhsMhs)"+ldapFilter+")";

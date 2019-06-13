@@ -54,9 +54,9 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
 
     @Search
     public List<PractitionerRole> search(HttpServletRequest request,
-                                         @OptionalParam(name = Practitioner.SP_IDENTIFIER)  TokenParam identifier,
+                                     @OptionalParam(name = Practitioner.SP_IDENTIFIER)  TokenParam identifier,
                                      @OptionalParam(name = PractitionerRole.SP_PRACTITIONER) ReferenceParam practitioner,
-                                         @OptionalParam(name = PractitionerRole.SP_ORGANIZATION) ReferenceParam organisation
+                                     @OptionalParam(name = PractitionerRole.SP_ORGANIZATION) ReferenceParam organisation
 
 
     ) throws Exception {

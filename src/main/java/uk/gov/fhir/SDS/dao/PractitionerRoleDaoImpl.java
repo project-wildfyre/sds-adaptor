@@ -137,8 +137,25 @@ public class PractitionerRoleDaoImpl {
             ldapFilter = ldapFilter + "(nhsGNC="+identifier.getValue()+")";
         }
         if (practitioner != null) {
-            log.info(practitioner.getValue());
-           ldapFilter = ldapFilter + "(uid="+practitioner.getValue()+")";
+
+            if (practitioner.getChain() == null) {
+                log.trace(practitioner.getValue());
+                ldapFilter = ldapFilter + "(uid=" + practitioner.getValue() + ")";
+            } else {
+                String chain =practitioner.getChain();
+                switch (chain) {
+                    case "name" :
+
+
+                            ldapFilter = ldapFilter + "(cn=*"+practitioner.getValue()+"*)";
+                            break;
+                    case "family" :
+
+
+                        ldapFilter = ldapFilter + "(sn=*"+practitioner.getValue()+"*)";
+                        break;
+                }
+            }
         }
         if (organisation != null) {
             log.info(organisation.getValue());

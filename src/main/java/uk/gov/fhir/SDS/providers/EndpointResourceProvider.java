@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
@@ -53,11 +54,12 @@ public class EndpointResourceProvider implements IResourceProvider {
 
     @Search
     public List<Endpoint> search(HttpServletRequest request,
-                                     @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam identifier
+                               //      @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam identifier,
+                                 @OptionalParam(name = Endpoint.SP_ORGANIZATION) ReferenceParam organisation
     ) throws Exception {
 
 
-        return endpointDao.search(identifier);
+        return endpointDao.search(null, organisation);
     }
 
 }
