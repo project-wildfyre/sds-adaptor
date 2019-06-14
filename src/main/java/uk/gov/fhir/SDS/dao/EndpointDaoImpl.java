@@ -216,7 +216,7 @@ public class EndpointDaoImpl {
     }
 
 
-    public List<Endpoint> search(TokenParam identifier, ReferenceParam organisation) {
+    public List<Endpoint> search(TokenParam identifier, ReferenceParam organisation, TokenParam interaction) {
 
         String ldapFilter = "";
 
@@ -251,6 +251,9 @@ public class EndpointDaoImpl {
             }
 
             ldapFilter = ldapFilter + "(nhsIDCode="+organisation.getValue()+")";
+        }
+        if (interaction != null) {
+            ldapFilter = ldapFilter + "(nhsMhsSvcIA="+interaction.getValue()+")";
         }
 
         if (ldapFilter.isEmpty()) return null;
