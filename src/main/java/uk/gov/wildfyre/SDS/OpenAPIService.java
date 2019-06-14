@@ -72,7 +72,7 @@ public class OpenAPIService {
     private String parseConformanceStatement(CapabilityStatement capabilityStatement) {
         JSONObject obj = new JSONObject();
 
-        obj.put("swagger", "2.0");
+        obj.put("openapi", "3.0.0");
 
         JSONObject info = new JSONObject();
         obj.put("info",info);
@@ -82,46 +82,65 @@ public class OpenAPIService {
         info.put("description","A reference implementation of the "+HapiProperties.getServerName()+" which conforms to the <a href=\"https://nhsconnect.github.io/CareConnectAPI/\">Care Connect API</a> ");
         info.put("termsOfService","http://swagger.io/terms/");
         info.put("basePath","/STU3");
+        info.put("schemes", new JSONArray().put("http"));
 
         JSONObject paths = new JSONObject();
         obj.put("paths",paths);
 
+        JSONObject resObjC = new JSONObject();
+        paths.put("/STU3/metadata",resObjC);
+        JSONObject opObjC = new JSONObject();
+        resObjC.put("get",opObjC);
+        opObjC.put("description","FHIR Server Capability Statement");
+        opObjC.put("consumes", new JSONArray());
+        JSONArray pc = new JSONArray();
+        pc.put("application/fhir+json");
+        pc.put("application/fhir+xml");
+        opObjC.put("produces",pc);
+        JSONArray paramsC = new JSONArray();
+        opObjC.put("parameters", paramsC);
+        opObjC.put("responses", getResponses());
+
         for (CapabilityStatement.CapabilityStatementRestComponent rest : capabilityStatement.getRest()) {
             for (CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent : rest.getResource()) {
 
-                JSONObject resObj = new JSONObject();
-                paths.put("/"+resourceComponent.getType(),resObj);
+
+                //paths.put("/"+resourceComponent.getType(),resObj);
 
                 for (CapabilityStatement.ResourceInteractionComponent interactionComponent : resourceComponent.getInteraction()) {
+                    JSONObject resObj = new JSONObject();
                     JSONObject opObj = new JSONObject();
 
                     switch (interactionComponent.getCode()) {
                         case READ:
+                            paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
                             resObj.put("get",opObj);
                             opObj.put("description",resourceComponent.getType());
                             opObj.put("consumes", new JSONArray());
                             JSONArray p = new JSONArray();
-                            p.put("application/fhir+xml");
                             p.put("application/fhir+json");
+                            p.put("application/fhir+xml");
                             opObj.put("produces",p);
                             JSONArray params = new JSONArray();
                             opObj.put("parameters", params);
                             JSONObject parm = new JSONObject();
                             params.put(parm);
-                            parm.put("name","{id}");
-                            parm.put("in", "query");
+                            parm.put("name","id");
+                            parm.put("in", "path");
                             parm.put("description", "The logical id of the resource");
                             parm.put("required", true);
-                            parm.put("type", "string");
-
+                            parm.put("schema",  new JSONObject()
+                                .put("type","string"));
+                            opObj.put("responses", getResponses());
                             break;
                         case SEARCHTYPE:
+                            paths.put("/STU3/"+resourceComponent.getType(),resObj);
                             resObj.put("get",opObj);
                             opObj.put("description",resourceComponent.getType());
                             opObj.put("consumes", new JSONArray());
                             JSONArray ps = new JSONArray();
-                            ps.put("application/fhir+xml");
                             ps.put("application/fhir+json");
+                            ps.put("application/fhir+xml");
                             opObj.put("produces",ps);
                             JSONArray paramss = new JSONArray();
                             opObj.put("parameters", paramss);
@@ -132,14 +151,18 @@ public class OpenAPIService {
                                 parms.put("in", "query");
                                 parms.put("description", search.getDocumentation());
                                 parms.put("required", false);
-                                parms.put("type", "string");
+                                parms.put("schema",  new JSONObject()
+                                        .put("type","string"));
                             }
+                            opObj.put("responses", getResponses());
                             break;
                         case UPDATE:
+                            paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
                             resObj.put("put",opObj);
                             obj.put("description",resourceComponent.getType());
                             break;
                         case CREATE:
+                            paths.put("/STU3/"+resourceComponent.getType(),resObj);
                             resObj.put("post",opObj);
                             obj.put("description",resourceComponent.getType());
                         break;
@@ -149,8 +172,21 @@ public class OpenAPIService {
             }
         }
         String retStr = obj.toString(2);
-        log.info(retStr);
+        log.trace(retStr);
         return retStr;
+    }
+
+    private JSONObject getResponses() {
+        JSONObject obj = new JSONObject();
+        obj.put("200", new JSONObject()
+                .put("description","Success"));
+        obj.put("400", new JSONObject()
+                .put("description","Bad Request"));
+        obj.put("404", new JSONObject()
+                .put("description","Not Found"));
+        obj.put("default", new JSONObject()
+                .put("description","Unexpected error"));
+        return obj;
     }
 
     private org.apache.http.client.HttpClient getHttpClient() {

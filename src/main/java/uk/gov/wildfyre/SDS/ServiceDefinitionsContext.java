@@ -16,7 +16,7 @@ public class ServiceDefinitionsContext {
         SwaggerResource resource = new SwaggerResource();
         resource.setLocation("/openapi" );
         resource.setName(HapiProperties.getServerName());
-        resource.setSwaggerVersion("2.0");
+        resource.setSwaggerVersion("3.0.0");
         resources.add(resource);
         return  resources;
     }

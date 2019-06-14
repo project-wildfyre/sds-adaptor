@@ -52,7 +52,7 @@ public class EndpointDaoImpl {
         @Override
         public Object mapFromAttributes(javax.naming.directory.Attributes attributes) throws NamingException {
             this.attributes = attributes;
-
+/*
             NamingEnumeration e = attributes.getAll();
 
 // Loop through the attributes
@@ -70,6 +70,8 @@ public class EndpointDaoImpl {
                 }
                 System.out.println();
             }
+
+ */
             SDS sds = new SDS();
 
             if (hasAttribute("nhsIDCode")) {
