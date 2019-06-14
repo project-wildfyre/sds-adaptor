@@ -14,7 +14,9 @@ import org.springframework.stereotype.Component;
 import javax.naming.NamingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class OrganizationDaoImpl {
@@ -23,6 +25,8 @@ public class OrganizationDaoImpl {
     private LdapTemplate ldapTemplate;
 
     private static final Logger log = LoggerFactory.getLogger(OrganizationDaoImpl.class);
+
+    private Map<String, String> orgName = new HashMap<>();
 
     private class OrganizationAttributesMapper implements AttributesMapper {
 
@@ -57,6 +61,9 @@ public class OrganizationDaoImpl {
             }
             if (hasAttribute("ou")) {
                 organisation.setName(getAttribute("ou"));
+            }
+            if (organisation.hasName() && hasAttribute("nhsIDCode") && orgName.get(getAttribute("nhsIDCode"))!= null) {
+                    orgName.put(getAttribute("nhsIDCode"),organisation.getName());
             }
 
             Period period = new Period();
@@ -134,9 +141,15 @@ public class OrganizationDaoImpl {
                 );
                 if (this.parent) {
 
-                    Organization parent = read(false, new IdType(getAttribute("nhsParentOrgCode")));
-                    if (parent != null && parent.hasName()) {
-                        organisation.getPartOf().setDisplay(parent.getName());
+                    if (orgName.get(getAttribute("nhsParentOrgCode"))!= null) {
+                        organisation.getPartOf().setDisplay(orgName.get(getAttribute("nhsParentOrgCode")));
+                    } else {
+                        Organization parent = read(false, new IdType(getAttribute("nhsParentOrgCode")));
+
+                        if (parent != null && parent.hasName()) {
+                            orgName.put(getAttribute("nhsParentOrgCode"),parent.getName());
+                            organisation.getPartOf().setDisplay(parent.getName());
+                        }
                     }
                 }
             }
@@ -208,6 +221,18 @@ public class OrganizationDaoImpl {
         }
         if (type != null) {
             ldapFilter = ldapFilter + "(nhsOrgTypeCode="+type.getValue()+")";
+            log.info(ldapFilter);
+        }
+        if (active != null) {
+            switch (active.getValue()) {
+                case "true":
+                    ldapFilter = ldapFilter + "(!(nhsOrgCloseDate=*))";
+                    break;
+                case "false":
+                    ldapFilter = ldapFilter + "(nhsOrgCloseDate=*)";
+                    break;
+            }
+
             log.info(ldapFilter);
         }
 
