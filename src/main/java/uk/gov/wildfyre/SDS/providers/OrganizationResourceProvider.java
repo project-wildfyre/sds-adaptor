@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.providers;
+package uk.gov.wildfyre.SDS.providers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.annotation.IdParam;
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.fhir.SDS.dao.OrganizationDaoImpl;
+import uk.gov.wildfyre.SDS.dao.OrganizationDaoImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

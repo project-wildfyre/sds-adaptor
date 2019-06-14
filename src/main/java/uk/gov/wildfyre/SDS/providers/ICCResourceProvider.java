@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.providers;
+package uk.gov.wildfyre.SDS.providers;
 
 import ca.uhn.fhir.rest.server.IResourceProvider;
 

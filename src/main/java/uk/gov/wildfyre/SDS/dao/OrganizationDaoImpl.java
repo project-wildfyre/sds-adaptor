@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.dao;
+package uk.gov.wildfyre.SDS.dao;
 
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
@@ -11,9 +11,7 @@ import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;

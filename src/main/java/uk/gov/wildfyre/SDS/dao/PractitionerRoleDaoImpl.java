@@ -1,7 +1,6 @@
-package uk.gov.fhir.SDS.dao;
+package uk.gov.wildfyre.SDS.dao;
 
 import ca.uhn.fhir.rest.param.ReferenceParam;
-import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import org.hl7.fhir.dstu3.model.*;
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.naming.NamingException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Component

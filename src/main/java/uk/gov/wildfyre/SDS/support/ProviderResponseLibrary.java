@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.support;
+package uk.gov.wildfyre.SDS.support;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.MethodOutcome;

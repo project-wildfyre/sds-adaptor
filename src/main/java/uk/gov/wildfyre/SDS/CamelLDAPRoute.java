@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS;
+package uk.gov.wildfyre.SDS;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.SimpleRegistry;

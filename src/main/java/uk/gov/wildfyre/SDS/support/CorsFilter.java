@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.support;
+package uk.gov.wildfyre.SDS.support;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

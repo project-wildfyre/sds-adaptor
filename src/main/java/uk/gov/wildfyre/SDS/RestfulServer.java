@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS;
+package uk.gov.wildfyre.SDS;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -13,7 +13,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.cors.CorsConfiguration;
 
 import uk.gov.fhir.SDS.providers.*;
-import uk.gov.fhir.SDS.support.ServerInterceptor;
+import uk.gov.wildfyre.SDS.providers.*;
+import uk.gov.wildfyre.SDS.support.ServerInterceptor;
 
 
 import javax.servlet.ServletException;

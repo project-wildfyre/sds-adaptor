@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS;
+package uk.gov.wildfyre.SDS;
 
 import ca.uhn.fhir.context.ConfigurationException;
 import ca.uhn.fhir.context.FhirVersionEnum;

@@ -1,11 +1,9 @@
-package uk.gov.fhir.SDS;
+package uk.gov.wildfyre.SDS;
 
 import ca.uhn.fhir.context.FhirContext;
 
-import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContextNameStrategy;
-import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +20,7 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import uk.gov.fhir.SDS.support.CorsFilter;
-import uk.gov.fhir.SDS.support.ProviderResponseLibrary;
+import uk.gov.wildfyre.SDS.support.CorsFilter;
 
 import javax.naming.Context;
 import javax.naming.NamingException;

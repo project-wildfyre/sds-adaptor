@@ -1,4 +1,4 @@
-package uk.gov.fhir.SDS.support;
+package uk.gov.wildfyre.SDS.support;
 
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
