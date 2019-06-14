@@ -12,7 +12,6 @@ import ca.uhn.fhir.util.VersionUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.cors.CorsConfiguration;
 
-import uk.gov.fhir.SDS.providers.*;
 import uk.gov.wildfyre.SDS.providers.*;
 import uk.gov.wildfyre.SDS.support.ServerInterceptor;
 

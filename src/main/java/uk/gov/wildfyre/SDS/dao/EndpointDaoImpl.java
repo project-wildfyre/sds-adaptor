@@ -216,44 +216,64 @@ public class EndpointDaoImpl {
 
     public List<Endpoint> search(TokenParam identifier, ReferenceParam organisation, TokenParam interaction) {
 
-        String ldapFilter = "";
+
 
         String ASID = null;
 
-
+        //  nhsAs search
+        String filter = "";
         if (identifier != null) {
-            if (identifier.getSystem().equals("https://fhir.nhs.uk/Ids/ASID")) {
+            if (identifier.getSystem()!=null && identifier.getSystem().equals("https://fhir.nhs.uk/Ids/ASID")) {
                 log.info(identifier.getValue());
-                String filter =  "(uniqueIdentifier=" + identifier.getValue() + ")";
+                filter =  filter + "(uniqueIdentifier=" + identifier.getValue() + ")";
 
-                filter = "(&(objectclass=nhsAs)" + filter + ")";
+            }
+        } else {
+            if (organisation != null) {
+                log.info(organisation.getValue());
+
+                filter = filter + "(nhsIDCode=" + organisation.getValue() + ")";
+
                 List<SDS> sds = ldapTemplate.search("ou=Services", filter, new EndpointAsAttributesMapper());
-                if (sds.size()>0) {
-                    organisation = new ReferenceParam().setValue(sds.get(0).getNhsIDCode());
-                    ASID = identifier.getValue();
+                if (sds.size() > 0) {
+                    ASID = sds.get(0).getASID();
                     log.info(ASID);
+                }
+            } else {
+                if (interaction != null) {
+                    filter = filter + "(nhsMhsSvcIA=" + interaction.getValue() + ")";
                 }
             }
         }
 
-        if (organisation != null) {
-            log.info(organisation.getValue());
-
-            String filter =  "(nhsIDCode=" + organisation.getValue() + ")";
-
-            filter = "(&(objectclass=nhsAs)" + filter + ")";
-            List<SDS> sds = ldapTemplate.search("ou=Services", filter, new EndpointAsAttributesMapper());
-            if (sds.size()>0) {
-                ASID = sds.get(0).getASID();
-                log.info(ASID);
+        if (filter.isEmpty()) {
+            return null;
+        }
+        filter = "(&(objectclass=nhsAs)" + filter + ")";
+        log.info("nhsAs filter (&(objectclass=nhsAs)= "+filter);
+        List<SDS> sds = ldapTemplate.search("ou=Services", filter, new EndpointAsAttributesMapper());
+        if (sds.size()>0) {
+            if (identifier !=null) {
+                organisation = new ReferenceParam().setValue(sds.get(0).getNhsIDCode());
             }
+            ASID = sds.get(0).getASID();
+            log.info(ASID);
+        } else {
+            return null;
+        }
 
-            ldapFilter = ldapFilter + "(nhsIDCode="+organisation.getValue()+")";
+        //  nhsMhs search
+
+        String ldapFilter = "";
+
+        if (organisation != null) {
+              ldapFilter = ldapFilter + "(nhsIDCode="+organisation.getValue()+")";
         }
         if (interaction != null) {
             ldapFilter = ldapFilter + "(nhsMhsSvcIA="+interaction.getValue()+")";
         }
 
+        log.info("nhsMhs filter (&(objectclass=nhsMhs)= "+ldapFilter);
         if (ldapFilter.isEmpty()) return null;
         ldapFilter = "(&(objectclass=nhsMhs)"+ldapFilter+")";
         return ldapTemplate.search("ou=Services", ldapFilter, new EndpointAttributesMapper(ASID));
