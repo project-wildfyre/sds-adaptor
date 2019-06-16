@@ -15,16 +15,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.wildfyre.SDS.providers.ConformanceProvider;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class OpenAPIService {
+
+    // Swagger guide https://swagger.io/docs/specification/2-0/basic-structure/
 
     @Autowired
     private ApplicationContext appCtx;
@@ -35,12 +35,18 @@ public class OpenAPIService {
     @Value("${server.port}")
     private String serverPort;
 
+    @Value("${server.servlet.context-path}")
+    private String serverPath;
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OpenAPIService.class);
 
-    @RequestMapping("/openapi")
+    @RequestMapping("/apidocs")
     public String greeting() {
         HttpClient client = getHttpClient();
-        HttpGet request = new HttpGet("http://127.0.0.1:"+serverPort+"/STU3/metadata");
+
+        String apidocs = "http://localhost:"+serverPort+serverPath+"/STU3/metadata";
+
+        HttpGet request = new HttpGet(apidocs);
         request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
 
@@ -66,20 +72,20 @@ public class OpenAPIService {
             log.error("IO Exception " + ex.getMessage());
         }
 
-        return "hello FHIR";
+        return "Unable to resolve swagger/openapi documentation from " + apidocs;
     }
 
     private String parseConformanceStatement(CapabilityStatement capabilityStatement) {
         JSONObject obj = new JSONObject();
 
-        obj.put("openapi", "3.0.0");
+        obj.put("swagger", "2.0");
 
         JSONObject info = new JSONObject();
         obj.put("info",info);
 
         info.put("version",HapiProperties.getSoftwareVersion());
         info.put("title",HapiProperties.getServerName());
-        info.put("description","A reference implementation of the "+HapiProperties.getServerName()+" which conforms to the <a href=\"https://nhsconnect.github.io/CareConnectAPI/\">Care Connect API</a> ");
+        info.put("description","A reference implementation of the "+HapiProperties.getServerName()+" which conforms to the <a href=\"https://nhsconnect.github.io/CareConnectAPI/\" target=\"_blank\">Care Connect API</a> ");
         info.put("termsOfService","http://swagger.io/terms/");
         info.put("basePath","/STU3");
         info.put("schemes", new JSONArray().put("http"));
@@ -101,71 +107,56 @@ public class OpenAPIService {
         opObjC.put("parameters", paramsC);
         opObjC.put("responses", getResponses());
 
+        Map pathMap= new HashMap<String, JSONObject>();
+
         for (CapabilityStatement.CapabilityStatementRestComponent rest : capabilityStatement.getRest()) {
             for (CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent : rest.getResource()) {
 
-
-                //paths.put("/"+resourceComponent.getType(),resObj);
-
                 for (CapabilityStatement.ResourceInteractionComponent interactionComponent : resourceComponent.getInteraction()) {
-                    JSONObject resObj = new JSONObject();
-                    JSONObject opObj = new JSONObject();
-
+                    JSONObject resObj = null;
                     switch (interactionComponent.getCode()) {
                         case READ:
-                            paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                            resObj.put("get",opObj);
-                            opObj.put("description",resourceComponent.getType());
-                            opObj.put("consumes", new JSONArray());
-                            JSONArray p = new JSONArray();
-                            p.put("application/fhir+json");
-                            p.put("application/fhir+xml");
-                            opObj.put("produces",p);
-                            JSONArray params = new JSONArray();
-                            opObj.put("parameters", params);
-                            JSONObject parm = new JSONObject();
-                            params.put(parm);
-                            parm.put("name","id");
-                            parm.put("in", "path");
-                            parm.put("description", "The logical id of the resource");
-                            parm.put("required", true);
-                            parm.put("schema",  new JSONObject()
-                                .put("type","string"));
-                            opObj.put("responses", getResponses());
+                            if (pathMap.containsKey("/STU3/"+resourceComponent.getType()+"/{id}")) {
+                                resObj = (JSONObject) pathMap.get("/STU3/"+resourceComponent.getType()+"/{id}");
+                            } else {
+                                resObj = new JSONObject();
+                                pathMap.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
+                                paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
+                            }
+                            resObj.put("get",getId(resourceComponent, interactionComponent));
                             break;
                         case SEARCHTYPE:
-                            paths.put("/STU3/"+resourceComponent.getType(),resObj);
-                            resObj.put("get",opObj);
-                            opObj.put("description",resourceComponent.getType());
-                            opObj.put("consumes", new JSONArray());
-                            JSONArray ps = new JSONArray();
-                            ps.put("application/fhir+json");
-                            ps.put("application/fhir+xml");
-                            opObj.put("produces",ps);
-                            JSONArray paramss = new JSONArray();
-                            opObj.put("parameters", paramss);
-                            for ( CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent search : resourceComponent.getSearchParam()) {
-                                JSONObject parms = new JSONObject();
-                                paramss.put(parms);
-                                parms.put("name", search.getName());
-                                parms.put("in", "query");
-                                parms.put("description", search.getDocumentation());
-                                parms.put("required", false);
-                                parms.put("schema",  new JSONObject()
-                                        .put("type","string"));
+                            if (pathMap.containsKey("/STU3/"+resourceComponent.getType())) {
+                                resObj = (JSONObject) pathMap.get("/STU3/"+resourceComponent.getType());
+                            } else {
+                                resObj = new JSONObject();
+                                pathMap.put("/STU3/"+resourceComponent.getType(),resObj);
+                                paths.put("/STU3/"+resourceComponent.getType(),resObj);
                             }
-                            opObj.put("responses", getResponses());
+                            resObj.put("get",getSearch(resourceComponent, interactionComponent));
                             break;
                         case UPDATE:
-                            paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                            resObj.put("put",opObj);
-                            obj.put("description",resourceComponent.getType());
+                            if (pathMap.containsKey("/STU3/"+resourceComponent.getType()+"/{id}")) {
+                                resObj = (JSONObject) pathMap.get("/STU3/"+resourceComponent.getType()+"/{id}");
+                            } else {
+                                resObj = new JSONObject();
+                                pathMap.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
+                                paths.put("/STU3/"+resourceComponent.getType()+"/{id}",resObj);
+                            }
+                            resObj.put("put",getId(resourceComponent, interactionComponent));
                             break;
                         case CREATE:
-                            paths.put("/STU3/"+resourceComponent.getType(),resObj);
-                            resObj.put("post",opObj);
-                            obj.put("description",resourceComponent.getType());
-                        break;
+
+                            if (pathMap.containsKey("/STU3/"+resourceComponent.getType())) {
+                                resObj = (JSONObject) pathMap.get("/STU3/"+resourceComponent.getType());
+                            } else {
+                                resObj = new JSONObject();
+                                pathMap.put("/STU3/"+resourceComponent.getType(),resObj);
+                                paths.put("/STU3/"+resourceComponent.getType(),resObj);
+                            }
+
+                            resObj.put("post",getSearch(resourceComponent, interactionComponent));
+                            break;
 
                     }
                 }
@@ -174,6 +165,97 @@ public class OpenAPIService {
         String retStr = obj.toString(2);
         log.trace(retStr);
         return retStr;
+    }
+
+
+
+
+    private JSONObject getSearch(CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent,
+                                 CapabilityStatement.ResourceInteractionComponent interactionComponent) {
+        JSONObject opObj = new JSONObject();
+
+        opObj.put("description","For detailed description see: "
+         +"<a href=\"https://hl7.org/fhir/stu3/"+resourceComponent.getType()+".html\" target=\"_blank\">FHIR "+resourceComponent.getType()+"</a> ");
+        JSONArray c = new JSONArray();
+        c.put("application/fhir+json");
+        c.put("application/fhir+xml");
+        opObj.put("consumes", c);
+
+        JSONArray ps = new JSONArray();
+        ps.put("application/fhir+json");
+        ps.put("application/fhir+xml");
+        opObj.put("produces",ps);
+        JSONArray paramss = new JSONArray();
+        opObj.put("parameters", paramss);
+
+        if (interactionComponent.getCode().equals(CapabilityStatement.TypeRestfulInteraction.SEARCHTYPE)) {
+            for (CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent search : resourceComponent.getSearchParam()) {
+                JSONObject parms = new JSONObject();
+                paramss.put(parms);
+                parms.put("name", search.getName());
+                parms.put("in", "query");
+                parms.put("description", search.getDocumentation());
+                parms.put("required", false);
+               // parms.put("schema", new JSONObject()
+                       parms.put("type", "string");
+            }
+        }
+        if (interactionComponent.getCode().equals(CapabilityStatement.TypeRestfulInteraction.CREATE)) {
+
+            JSONObject parm = new JSONObject();
+            paramss.put(parm);
+            parm.put("name","body");
+            parm.put("in", "body");
+            parm.put("description", "The resource ");
+            parm.put("required", true);
+           // parm.put("schema",  new JSONObject()
+                    parm.put("type","object");
+            opObj.put("responses", getResponses());
+        }
+
+        opObj.put("responses", getResponses());
+        return opObj;
+    }
+
+    private JSONObject getId(CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent
+            ,
+                             CapabilityStatement.ResourceInteractionComponent interactionComponent) {
+        JSONObject opObj = new JSONObject();
+        opObj.put("description",
+                "For detailed description see: <a href=\"https://hl7.org/fhir/stu3/"+resourceComponent.getType()+".html\" target=\"_blank\">FHIR "+resourceComponent.getType()+"</a> ");
+
+        JSONArray c = new JSONArray();
+        c.put("application/fhir+json");
+        c.put("application/fhir+xml");
+        opObj.put("consumes", c);
+        JSONArray p = new JSONArray();
+        p.put("application/fhir+json");
+        p.put("application/fhir+xml");
+        opObj.put("produces",p);
+        JSONArray params = new JSONArray();
+        opObj.put("parameters", params);
+        JSONObject parm = new JSONObject();
+        params.put(parm);
+        parm.put("name","id");
+        parm.put("in", "path");
+        parm.put("description", "The logical id of the resource");
+        parm.put("required", true);
+       // parm.put("schema",  new JSONObject()
+                parm.put("type","string");
+        opObj.put("responses", getResponses());
+        if (interactionComponent.getCode().equals(CapabilityStatement.TypeRestfulInteraction.UPDATE)) {
+
+            parm = new JSONObject();
+            params.put(parm);
+            parm.put("name","body");
+            parm.put("in", "body");
+            parm.put("description", "The resource ");
+            parm.put("required", true);
+            //parm.put("schema",  new JSONObject()
+                    parm.put("type","object");
+            opObj.put("responses", getResponses());
+        }
+        return opObj;
     }
 
     private JSONObject getResponses() {
@@ -189,8 +271,8 @@ public class OpenAPIService {
         return obj;
     }
 
-    private org.apache.http.client.HttpClient getHttpClient() {
-        final org.apache.http.client.HttpClient httpClient = HttpClientBuilder.create().build();
+    private HttpClient getHttpClient() {
+        final HttpClient httpClient = HttpClientBuilder.create().build();
         return httpClient;
     }
 }
