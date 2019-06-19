@@ -13,7 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.cors.CorsConfiguration;
 
 import uk.gov.wildfyre.SDS.providers.*;
-import uk.gov.wildfyre.SDS.support.ServerInterceptor;
+import uk.gov.wildfyre.SDS.interceptor.ServerInterceptor;
 
 
 import javax.servlet.ServletException;

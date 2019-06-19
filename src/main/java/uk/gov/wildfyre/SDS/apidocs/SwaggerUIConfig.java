@@ -1,11 +1,10 @@
-package uk.gov.wildfyre.SDS;
+package uk.gov.wildfyre.SDS.apidocs;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
-import org.springframework.web.client.RestTemplate;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 import java.util.ArrayList;
