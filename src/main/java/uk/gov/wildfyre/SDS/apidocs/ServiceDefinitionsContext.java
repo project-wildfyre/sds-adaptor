@@ -1,7 +1,8 @@
-package uk.gov.wildfyre.SDS;
+package uk.gov.wildfyre.SDS.apidocs;
 
 import org.springframework.stereotype.Component;
 import springfox.documentation.swagger.web.SwaggerResource;
+import uk.gov.wildfyre.SDS.HapiProperties;
 
 import java.util.ArrayList;
 import java.util.List;

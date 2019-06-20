@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS;
+package uk.gov.wildfyre.SDS.configuration;
 
 import org.springframework.context.annotation.Configuration;
 

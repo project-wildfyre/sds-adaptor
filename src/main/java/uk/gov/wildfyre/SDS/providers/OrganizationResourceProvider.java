@@ -9,7 +9,6 @@ import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
-import org.apache.camel.CamelContext;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.slf4j.Logger;
@@ -29,8 +28,7 @@ public class OrganizationResourceProvider implements IResourceProvider {
     @Autowired
     FhirContext ctx;
 
-    @Autowired
-    CamelContext context;
+
 
     @Autowired
     OrganizationDaoImpl organisationDao;

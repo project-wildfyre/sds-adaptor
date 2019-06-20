@@ -2,9 +2,7 @@ package uk.gov.wildfyre.SDS;
 
 import ca.uhn.fhir.context.FhirContext;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.impl.DefaultCamelContextNameStrategy;
-import org.apache.camel.spring.boot.CamelContextConfiguration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,29 +15,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
-import org.springframework.web.bind.annotation.RequestMethod;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.builders.ResponseMessageBuilder;
-import springfox.documentation.schema.ModelRef;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.service.ResponseMessage;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
+
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import uk.gov.wildfyre.SDS.support.CorsFilter;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.ldap.InitialLdapContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+
 
 
 @SpringBootApplication
@@ -99,6 +84,7 @@ public class SDSAdaptor {
         return template;
     }
 
+    /*
     @Bean
     CamelContextConfiguration contextConfiguration() {
         return new CamelContextConfiguration() {
@@ -136,16 +122,7 @@ public class SDSAdaptor {
             }
         };
     }
-
-    /*
-
-     <bean id="contextSource"
-    class="org.springframework.ldap.transaction.compensating.manager.TransactionAwareContextSourceProxy">
-      <constructor-arg ref="contextSourceTarget" />
-   </bean>
-
-
-     */
+    */
 
 
     @Bean
@@ -163,50 +140,5 @@ public class SDSAdaptor {
         return bean;
     }
 
-    /*
-    @Bean
-    public Docket api() {
-        Docket docket  = new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("uk.gov"))
-                .paths(PathSelectors.any())
-                .build()
-                .apiInfo(getApiInformation())
-                .useDefaultResponseMessages(false)
-                .globalResponseMessage(RequestMethod
-                                .GET, getGlobalResponses());
 
-        return docket;
-    }*/
-
-/*
-    private ArrayList<ResponseMessage> getGlobalResponses() {
-        ArrayList<ResponseMessage> list = new ArrayList<>();
-        list.add(new ResponseMessageBuilder()
-                .code(500)
-                .message("500 message")
-                .responseModel(new ModelRef("Error"))
-                .build());
-        list.add(new ResponseMessageBuilder()
-                .code(403)
-                .message("Forbidden!")
-                .build());
-        return list;
-    }
-
-
-
-    private ApiInfo getApiInformation(){
-        return new ApiInfo("Demo REST API",
-                "This is a Demo API created using Spring Boot",
-                "1.0",
-                "API Terms of Service URL",
-                new Contact("Progressive Coder", "www.progressivecoder.com", "coder.progressive@gmail.com"),
-                "API License",
-                "API License URL",
-                Collections.emptyList()
-        );
-    }
-
- */
 }

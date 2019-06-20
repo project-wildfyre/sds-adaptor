@@ -8,7 +8,6 @@ import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
-import org.apache.camel.CamelContext;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Endpoint;
 import org.slf4j.Logger;
@@ -28,8 +27,7 @@ public class EndpointResourceProvider implements IResourceProvider {
     @Autowired
     FhirContext ctx;
 
-    @Autowired
-    CamelContext context;
+
 
     @Autowired
     EndpointDaoImpl endpointDao;

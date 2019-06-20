@@ -8,7 +8,6 @@ import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
-import org.apache.camel.*;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.PractitionerRole;
@@ -30,8 +29,6 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
     @Autowired
     FhirContext ctx;
 
-    @Autowired
-    CamelContext context;
 
     @Autowired
     PractitionerRoleDaoImpl practitionerRoleDao;
