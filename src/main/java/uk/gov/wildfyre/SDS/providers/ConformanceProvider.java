@@ -78,14 +78,14 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
 
         capabilityStatement.getSoftware().setName(HapiProperties.getSoftwareName());
         capabilityStatement.getSoftware().setVersion(HapiProperties.getSoftwareVersion());
-        capabilityStatement.getImplementation().setDescription(HapiProperties.getServerName());
-        capabilityStatement.getImplementation().setUrl(HapiProperties.getServerBase());
+        capabilityStatement.getImplementation().setDescription(HapiProperties.getSoftwareImplementationDesc());
+        capabilityStatement.getImplementation().setUrl(HapiProperties.getSoftwareImplementationUrl());
 
         // KGM only add if not already present
         if (capabilityStatement.getImplementationGuide().size() == 0) {
-            capabilityStatement.getImplementationGuide().add(new UriType(HapiProperties.getSoftwareImplementationDesc()));
-            capabilityStatement.setPublisher("NHS Digital & Dept for Work and Pensions");
+            capabilityStatement.getImplementationGuide().add(new UriType(HapiProperties.getSoftwareImplementationGuide()));
         }
+        capabilityStatement.setPublisher("NHS Digital & Dept for Work and Pensions");
 
         if (restfulServer != null) {
             log.info("restful Server not null");
