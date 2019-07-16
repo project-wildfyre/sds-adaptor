@@ -61,13 +61,13 @@ public class ServerInterceptor extends InterceptorAdapter {
 
         // tickets #41 #43 #44 #45
 
-        log.info("Exception = "+theException.getClass().getCanonicalName());
+        log.info("Exception = " + theException.getClass().getCanonicalName());
         if (theException instanceof InvalidRequestException) {
-            if (theException.getOperationOutcome() !=null && theException.getOperationOutcome() instanceof OperationOutcome) {
+            if (theException.getOperationOutcome() != null && theException.getOperationOutcome() instanceof OperationOutcome) {
                 //FhirContext ctx = FhirContext.forDstu3();
 
-                OperationOutcome outcome  = (OperationOutcome) theException.getOperationOutcome();
-                log.info("Exception intercept. Diagnostic Response = "+outcome.getIssueFirstRep().getDiagnostics()+ " "+outcome.getIssueFirstRep().getCode().getDisplay());
+                OperationOutcome outcome = (OperationOutcome) theException.getOperationOutcome();
+                log.info("Exception intercept. Diagnostic Response = " + outcome.getIssueFirstRep().getDiagnostics() + " " + outcome.getIssueFirstRep().getCode().getDisplay());
                 if (outcome.getIssueFirstRep().getCode().equals(OperationOutcome.IssueType.PROCESSING)) {
                     if (outcome.getIssueFirstRep().getDiagnostics().contains("The FHIR endpoint on this server does not know how to handle")) {
 
@@ -106,16 +106,16 @@ public class ServerInterceptor extends InterceptorAdapter {
 
         }
         if (theException instanceof InternalErrorException) {
-            if (theException.getOperationOutcome() !=null && theException.getOperationOutcome() instanceof OperationOutcome) {
+            if (theException.getOperationOutcome() != null && theException.getOperationOutcome() instanceof OperationOutcome) {
                 //FhirContext ctx = FhirContext.forDstu3();
 
-                OperationOutcome outcome  = (OperationOutcome) theException.getOperationOutcome();
-                log.error("InternalErrorException: Diagnostics = "+outcome.getIssueFirstRep().getDiagnostics()+ " "+outcome.getIssueFirstRep().getCode().getDisplay());
+                OperationOutcome outcome = (OperationOutcome) theException.getOperationOutcome();
+                log.error("InternalErrorException: Diagnostics = " + outcome.getIssueFirstRep().getDiagnostics() + " " + outcome.getIssueFirstRep().getCode().getDisplay());
                 if (outcome.getIssueFirstRep().getCode().equals(OperationOutcome.IssueType.PROCESSING)) {
 
                     theServletResponse.setStatus(400);
-                    if (outcome.getIssueFirstRep().getDiagnostics() != null){
-                        log.debug("Diagnostic Response = "+outcome.getIssueFirstRep().getDiagnostics());
+                    if (outcome.getIssueFirstRep().getDiagnostics() != null) {
+                        log.debug("Diagnostic Response = " + outcome.getIssueFirstRep().getDiagnostics());
 
                     }
 
@@ -133,14 +133,13 @@ public class ServerInterceptor extends InterceptorAdapter {
     }
 
 
-
     @Override
     public boolean incomingRequestPostProcessed(RequestDetails theRequestDetails, HttpServletRequest theRequest, HttpServletResponse theResponse) throws AuthenticationException {
-        log.trace("incomingRequestPostProcessed "+theRequest.getMethod());
+        log.trace("incomingRequestPostProcessed " + theRequest.getMethod());
         Enumeration<String> headers = theRequest.getHeaderNames();
         while (headers.hasMoreElements()) {
             String header = headers.nextElement();
-            log.debug("Header  = "+ header + "="+ theRequest.getHeader(header));
+            log.debug("Header  = " + header + "=" + theRequest.getHeader(header));
         }
         // Perform any string substitutions from the message format
         StrLookup<?> lookup = new MyLookup(theRequest, theRequestDetails);
@@ -157,7 +156,7 @@ public class ServerInterceptor extends InterceptorAdapter {
 
     @Override
     public boolean incomingRequestPreProcessed(HttpServletRequest request, HttpServletResponse theResponse) {
-        log.trace("incomingRequestPreProcessed "+request.getMethod());
+        log.trace("incomingRequestPreProcessed " + request.getMethod());
         // 30/Apr/2018 Ignore for Binary endpoints
         if (request.getMethod() != null && (!request.getRequestURI().contains("Binary"))) {
 
@@ -167,11 +166,11 @@ public class ServerInterceptor extends InterceptorAdapter {
                 throw new MethodNotAllowedException("request must use HTTP GET");
             */
 
-            if (request.getContentType() != null ) {
-               checkContentType(request.getContentType());
+            if (request.getContentType() != null) {
+                checkContentType(request.getContentType());
             }
 
-            if (request.getHeader("Accept")  != null && !request.getHeader("Accept").equals("*/*")) {
+            if (request.getHeader("Accept") != null && !request.getHeader("Accept").equals("*/*")) {
                 checkContentType(request.getHeader("Accept"));
             }
 
@@ -204,19 +203,29 @@ public class ServerInterceptor extends InterceptorAdapter {
         }
         return true;
     }
+
     public void checkContentType(String contentType) {
         try {
-                MediaType media = MediaType.parseMediaType(contentType);
-                // TODO improve the logic here
-                if (media.getSubtype() != null && !media.getSubtype().contains("xml") && !media.getSubtype().contains("fhir") && !media.getSubtype().contains("json") && !media.getSubtype().contains("plain")) {
-                    log.debug("Unsupported media type: " + contentType);
-                    throw new InvalidRequestException("Unsupported media type: sub " + contentType);
+            MediaType media = MediaType.parseMediaType(contentType);
+            // TODO improve the logic here
+            if (media.getSubtype() != null
+                    && !media.getSubtype().contains("xml")
+                    && !media.getSubtype().contains("fhir")
+                    && !media.getSubtype().contains("json")
+                    && !media.getSubtype().contains("plain")
+            ) {
+                log.debug("Unsupported media type: " + contentType);
+                if (media.getSubtype().contains("x-www-form-urlencoded")) {
+                    return;
                 } else {
-                    if (!contentType.contains("xml") && !contentType.contains("json")) {
-                        log.debug("Unsupported media type: " + contentType);
-                        throw new InvalidRequestException("Unsupported media type: content " + contentType);
-                    }
+                    throw new InvalidRequestException("Unsupported media type: sub " + contentType);
                 }
+            } else {
+                if (!contentType.contains("xml") && !contentType.contains("json")) {
+                    log.debug("Unsupported media type: " + contentType);
+                    throw new InvalidRequestException("Unsupported media type: content " + contentType);
+                }
+            }
 
         } catch (InvalidMediaTypeException e) {
             log.debug("Unsupported media type: " + contentType);
@@ -243,85 +252,87 @@ public class ServerInterceptor extends InterceptorAdapter {
 
         String val = theRequestDetails.getHeader("x-request-id");
 
-        if (val !=null && !val.isEmpty()) {
+        if (val != null && !val.isEmpty()) {
             response.addHeader("X-Correlation-ID", val);
-           // theServletResponse.setHeader("X-Request-ID","");
+            // theServletResponse.setHeader("X-Request-ID","");
         }
-        log.debug("oR Content-Type = "+theRequestDetails.getHeader("Accept"));
+        log.debug("oR Content-Type = " + theRequestDetails.getHeader("Accept"));
         String acceptType = theRequestDetails.getHeader("Accept");
 
         String[] value = theRequestDetails.getParameters().get("_format");
         if (value != null) {
             for (String nextParam : value) {
                 acceptType = nextParam;
-                log.info("_format = "+acceptType);
+                log.info("_format = " + acceptType);
             }
         }
 
-        if(resource!=null) {
-        log.trace("Response resource instance of "+resource.getClass().getSimpleName());
-        
+        if (resource != null) {
+            log.trace("Response resource instance of " + resource.getClass().getSimpleName());
 
-        if (resource.getClass()!=null) log.trace("Response resource instance of "+resource.getClass().getSimpleName());
-        if (theRequestDetails != null && theRequestDetails.getResourceName() != null) log.trace("Request resource "+theRequestDetails.getResourceName().equals("Binary"));
 
-        // Special Procecssing for Binary when a FHIR document is returned
-        if (resource instanceof Binary && theRequestDetails.getResourceName().equals("Binary")) {
-            Binary binary = (Binary) resource;
-            Bundle bundle = null;
-            log.trace("Content Type of returned Binary"+binary.getContentType().contains("fhir"));
-            // Check for FHIR Document
-            if (binary.getContentType().contains("fhir")) {
-                // Assume this is a FHIR Document
-                ByteArrayInputStream b = new ByteArrayInputStream(binary.getContent());
+            if (resource.getClass() != null)
+                log.trace("Response resource instance of " + resource.getClass().getSimpleName());
+            if (theRequestDetails != null && theRequestDetails.getResourceName() != null)
+                log.trace("Request resource " + theRequestDetails.getResourceName().equals("Binary"));
 
-                Reader reader = new InputStreamReader(b);
-                IBaseResource resourceBundle = null;
-                // Response should be json
-                if (binary.getContentType().contains("json")) {
-                    resourceBundle = ctx.newJsonParser().parseResource(reader);
-                } else {
-                    resourceBundle = ctx.newXmlParser().parseResource(reader);
-                }
-                log.debug("Parsed resource type = " + resourceBundle.getClass().getSimpleName());
-                if (resourceBundle instanceof Bundle) {
-                    // XML is default for FHIR documents
-                    if (acceptType == null || (acceptType.contains("fhir") && acceptType.contains("xml"))) {
-                        try {
+            // Special Procecssing for Binary when a FHIR document is returned
+            if (resource instanceof Binary && theRequestDetails.getResourceName().equals("Binary")) {
+                Binary binary = (Binary) resource;
+                Bundle bundle = null;
+                log.trace("Content Type of returned Binary" + binary.getContentType().contains("fhir"));
+                // Check for FHIR Document
+                if (binary.getContentType().contains("fhir")) {
+                    // Assume this is a FHIR Document
+                    ByteArrayInputStream b = new ByteArrayInputStream(binary.getContent());
 
-                            // Response was json, convert to xml
-                            binary.setContentType("application/fhir+xml");
-                            binary.setContent(ctx.newXmlParser().encodeResourceToString(resourceBundle).getBytes());
-                            response.setStatus(200);
-                            response.setContentType("application/fhir+xml");
+                    Reader reader = new InputStreamReader(b);
+                    IBaseResource resourceBundle = null;
+                    // Response should be json
+                    if (binary.getContentType().contains("json")) {
+                        resourceBundle = ctx.newJsonParser().parseResource(reader);
+                    } else {
+                        resourceBundle = ctx.newXmlParser().parseResource(reader);
+                    }
+                    log.debug("Parsed resource type = " + resourceBundle.getClass().getSimpleName());
+                    if (resourceBundle instanceof Bundle) {
+                        // XML is default for FHIR documents
+                        if (acceptType == null || (acceptType.contains("fhir") && acceptType.contains("xml"))) {
+                            try {
 
-                            if (acceptType == null) {
-                                // if not asked for format return xml as default
-                                response.getOutputStream().write(ctx.newXmlParser().encodeResourceToString(resourceBundle).getBytes());
-                            } else {
-                                // else return as a Bundle
-                                response.getOutputStream().write(ctx.newXmlParser().encodeResourceToString(binary).getBytes());
+                                // Response was json, convert to xml
+                                binary.setContentType("application/fhir+xml");
+                                binary.setContent(ctx.newXmlParser().encodeResourceToString(resourceBundle).getBytes());
+                                response.setStatus(200);
+                                response.setContentType("application/fhir+xml");
+
+                                if (acceptType == null) {
+                                    // if not asked for format return xml as default
+                                    response.getOutputStream().write(ctx.newXmlParser().encodeResourceToString(resourceBundle).getBytes());
+                                } else {
+                                    // else return as a Bundle
+                                    response.getOutputStream().write(ctx.newXmlParser().encodeResourceToString(binary).getBytes());
+                                }
+
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
                             }
+                            return false;
+                        } else if (acceptType.equals("text/html")) {
+                            try {
+                                // requested document as html
+                                response.setStatus(200);
+                                response.setContentType("text/html");
 
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                        return false;
-                    } else if ( acceptType.equals("text/html")) {
-                        try {
-                            // requested document as html
-                            response.setStatus(200);
-                            response.setContentType("text/html");
+                                performTransform(response.getOutputStream(), resourceBundle, "XML/DocumentToHTML.xslt");
 
-                            performTransform(response.getOutputStream(), resourceBundle, "XML/DocumentToHTML.xslt");
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                        return false;
-                    } else if (acceptType.equals("application/pdf")) {
-                        try {
-                            // requested document as pdf
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                            return false;
+                        } else if (acceptType.equals("application/pdf")) {
+                            try {
+                                // requested document as pdf
 
 
                             /*
@@ -349,16 +360,16 @@ public class ServerInterceptor extends InterceptorAdapter {
                             renderer.finishPDF();
                             fos.flush();
 */
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
                 }
-            }
 
-        }
+            }
         } // check for resource null end
-       return true;
+        return true;
 
     }
 
@@ -376,9 +387,8 @@ public class ServerInterceptor extends InterceptorAdapter {
         String myMessageFormat = "httpVerb[${requestVerb}] Source[${remoteAddr}] Operation[${operationType} ${idOrResourceName}] UA[${requestHeader.user-agent}] Params[${requestParameters}] RequestId[${requestHeader.x-request-id}] ForwardedFor[${requestHeader.x-forwarded-for}] ForwardedHost[${requestHeader.x-forwarded-host}] CorrelationId[${requestHeader.x-request-id}] ProcessingTime[${processingTimeMillis}]";
 
         String line = subs.replace(myMessageFormat);
-        log.info(line+" ResponseCode["+theRequestDetails.getServletResponse().getStatus()+"]");
+        log.info(line + " ResponseCode[" + theRequestDetails.getServletResponse().getStatus() + "]");
     }
-
 
 
     private static final class MyLookup extends StrLookup<String> {
@@ -401,9 +411,9 @@ public class ServerInterceptor extends InterceptorAdapter {
         @Override
         public String lookup(String theKey) {
 
-			/*
-			 * TODO: this method could be made more efficient through some sort of lookup map
-			 */
+            /*
+             * TODO: this method could be made more efficient through some sort of lookup map
+             */
 
             if ("operationType".equals(theKey)) {
                 if (myRequestDetails.getRestOperationType() != null) {
@@ -513,7 +523,7 @@ public class ServerInterceptor extends InterceptorAdapter {
 
         // Input xsl (stylesheet) file
         String xslInput = classLoader.getResource(styleSheet).getFile();
-        log.debug("xslInput = "+xslInput);
+        log.debug("xslInput = " + xslInput);
         // Set the property to use xalan processor
         System.setProperty("javax.xml.transform.TransformerFactory",
                 "org.apache.xalan.processor.TransformerFactoryImpl");
@@ -523,8 +533,8 @@ public class ServerInterceptor extends InterceptorAdapter {
             InputStream xml = new ByteArrayInputStream(ctx.newXmlParser().encodeResourceToString(resource).getBytes(StandardCharsets.UTF_8));
 
             // For Windows repace escape sequence
-            xslInput = xslInput.replace("%20"," ");
-            log.debug("open fileInputStream for xsl "+xslInput);
+            xslInput = xslInput.replace("%20", " ");
+            log.debug("open fileInputStream for xsl " + xslInput);
             FileInputStream xsl = new FileInputStream(xslInput);
 
             // Instantiate a transformer factory

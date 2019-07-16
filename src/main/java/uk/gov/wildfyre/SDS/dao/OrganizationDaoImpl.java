@@ -201,8 +201,12 @@ public class OrganizationDaoImpl {
             log.info(ldapFilter);
         }
         if (name != null) {
-            ldapFilter = ldapFilter + "(|(ou=*"+name.getValue()+"*)(o=*"+name.getValue()+"*))";
-            log.info(ldapFilter);
+            if (name.getValue() != null) {
+                ldapFilter = ldapFilter + "(|(ou=*" + name.getValue() + "*)(o=*" + name.getValue() + "*))";
+                log.info(ldapFilter);
+            } else {
+                return null;
+            }
         }
         if (partOf != null) {
             getParent= false; // Don't return partOf in the resources

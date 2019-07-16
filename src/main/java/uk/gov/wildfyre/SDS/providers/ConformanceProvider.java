@@ -65,7 +65,7 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
         }
         CapabilityStatement capabilityStatement = super.getServerConformance(theRequest);
 
-        capabilityStatement.setPublisher("NHS Digital & Dept for Work and Pensions");
+        capabilityStatement.setPublisher("NHS Digital & DWP Digital");
         capabilityStatement.setDateElement(conformanceDate());
         capabilityStatement.setFhirVersion(FhirVersionEnum.DSTU3.getFhirVersionString());
         capabilityStatement.setAcceptUnknown(CapabilityStatement.UnknownContentCode.EXTENSIONS); // TODO: make this configurable - this is a fairly big
@@ -85,7 +85,7 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
         if (capabilityStatement.getImplementationGuide().size() == 0) {
             capabilityStatement.getImplementationGuide().add(new UriType(HapiProperties.getSoftwareImplementationGuide()));
         }
-        capabilityStatement.setPublisher("NHS Digital & Dept for Work and Pensions");
+        capabilityStatement.setPublisher("NHS Digital & DWP Digital");
 
         if (restfulServer != null) {
             log.info("restful Server not null");

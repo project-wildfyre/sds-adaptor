@@ -163,6 +163,7 @@ public class PractitionerRoleDaoImpl {
             return null;
         }
         ldapFilter = "(&(objectclass=nhsOrgPerson)"+ldapFilter+")";
+        log.info("ldapFilter= "+ldapFilter);
         return ldapTemplate.search("ou=People", ldapFilter, new PractitionerRoleAttributesMapper());
     }
 
