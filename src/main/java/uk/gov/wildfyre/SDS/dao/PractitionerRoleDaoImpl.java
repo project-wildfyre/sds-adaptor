@@ -86,9 +86,22 @@ public class PractitionerRoleDaoImpl {
                     }
                 }
             }
+            practitionerRole.addIdentifier()
+                    .setSystem("https://fhir.nhs.uk/Id/sds-user-id")
+                    .setValue(getAttribute("uid"));
             if (hasAttribute("nhsGNC")) {
+                if (getAttribute("nhsGNC").startsWith("G")) {
+                    practitionerRole.addIdentifier()
+                            .setSystem("https://fhir.hl7.org.uk/Id/gmp-number")
+                            .setValue(getAttribute("nhsGNC"));
+                }
+                if (getAttribute("nhsGNC").startsWith("C")) {
+                    practitionerRole.addIdentifier()
+                            .setSystem("https://fhir.hl7.org.uk/Id/gmc-number")
+                            .setValue(getAttribute("nhsGNC"));
+                }
                 practitionerRole.addIdentifier()
-                        .setSystem("https://fhir.nhs.uk/Id/sds-user-id")
+                        .setSystem("urn:oid: 2.16.840.1.113883.12.10")
                         .setValue(getAttribute("nhsGNC"));
             }
             if (hasAttribute("o")) {

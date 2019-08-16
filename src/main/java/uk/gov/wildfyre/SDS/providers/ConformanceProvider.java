@@ -3,9 +3,10 @@ package uk.gov.wildfyre.SDS.providers;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.rest.annotation.Metadata;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
-import ca.uhn.fhir.rest.server.RestulfulServerConfiguration;
+import ca.uhn.fhir.rest.server.RestfulServerConfiguration;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -31,7 +32,7 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
     private boolean myCache = true;
     private volatile CapabilityStatement capabilityStatement;
 
-    private RestulfulServerConfiguration serverConfiguration;
+    private RestfulServerConfiguration serverConfiguration;
 
     private RestfulServer restfulServer;
 
@@ -54,7 +55,7 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
 
     @Override
     @Metadata
-    public CapabilityStatement getServerConformance(HttpServletRequest theRequest) {
+    public CapabilityStatement getServerConformance(HttpServletRequest theRequest, RequestDetails theRequestDetails ) {
 
         WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(theRequest.getServletContext());
         log.info("restful2 Server not null = " + ctx.getEnvironment().getProperty("ccri.validate_flag"));
@@ -63,7 +64,7 @@ public class ConformanceProvider extends ServerCapabilityStatementProvider {
         if (capabilityStatement != null && myCache) {
             return capabilityStatement;
         }
-        CapabilityStatement capabilityStatement = super.getServerConformance(theRequest);
+        CapabilityStatement capabilityStatement = super.getServerConformance(theRequest, theRequestDetails);
 
         capabilityStatement.setPublisher("NHS Digital & DWP Digital");
         capabilityStatement.setDateElement(conformanceDate());
