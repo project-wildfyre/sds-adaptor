@@ -13,7 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
+
 import javax.naming.NamingException;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -39,14 +42,14 @@ public class PractitionerDaoImpl {
             } else {
                 return null;
             }
-            if (hasAttribute("sn") || hasAttribute("givenName")) {
+            if (hasAttribute("sn") || hasAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME)) {
                 HumanName name = practitioner.addName();
 
                 if (hasAttribute("sn")) {
                         name.setFamily(getAttribute("sn"));
                 }
-                if (hasAttribute("givenName")) {
-                        name.addGiven(getAttribute("givenName"));
+                if (hasAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME)) {
+                        name.addGiven(getAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME));
                 }
                 if (hasAttribute("personalTitle")) {
                     name.addPrefix(getAttribute("personalTitle"));
@@ -64,9 +67,8 @@ public class PractitionerDaoImpl {
             return practitioner;
         }
 
-        public Boolean hasAttribute(String attrib) {
-            if (attributes.get(attrib)!= null) return true;
-            return false;
+        public boolean hasAttribute(String attrib) {
+            return (attributes.get(attrib)!= null);
         }
 
         public String getAttribute(String attrib) {
@@ -87,7 +89,7 @@ public class PractitionerDaoImpl {
         log.info(internalId.getIdPart());
         List<Practitioner> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsPerson)(uid="+internalId.getIdPart()+"))", new PractitionerAttributesMapper());
 
-        if (practitioners.size()>0) {
+        if (!practitioners.isEmpty()) {
             return practitioners.get(0);
         }
         return null;
@@ -101,13 +103,13 @@ public class PractitionerDaoImpl {
         if (identifier != null) {
             log.info(identifier.getValue());
             List<PractitionerRole> roles = practitionerRoleDao.search(identifier,null, null);
-            if (roles.size()== 0) return null;
+            if (roles.isEmpty()) return Collections.emptyList();
 
             PractitionerRole role = roles.get(0);
-            if (!role.hasPractitioner() || !role.getPractitioner().hasReference()) return null;
+            if (!role.hasPractitioner() || !role.getPractitioner().hasReference()) return Collections.emptyList();
 
             String[] ids = role.getPractitioner().getReference().split("/");
-            if (ids[1]== null) return null;
+            if (ids[1]== null) return Collections.emptyList();
             ldapFilter = ldapFilter + "(uid="+ids[1]+")";
             log.info(ldapFilter);
         }
@@ -119,7 +121,7 @@ public class PractitionerDaoImpl {
             log.info(name.getValue());
             ldapFilter = ldapFilter + "(cn=*"+name.getValue()+"*)";
         }
-        if (ldapFilter.isEmpty()) return null;
+        if (ldapFilter.isEmpty()) return Collections.emptyList();
         ldapFilter = "(&(objectclass=nhsPerson)"+ldapFilter+")";
         return ldapTemplate.search("ou=People", ldapFilter, new PractitionerAttributesMapper());
     }

@@ -10,13 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
 
 import javax.naming.NamingException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class OrganizationDaoImpl {
@@ -35,7 +33,7 @@ public class OrganizationDaoImpl {
         }
 
         javax.naming.directory.Attributes attributes;
-        private Boolean parent;
+        private boolean parent;
 
         @Override
         public Object mapFromAttributes(javax.naming.directory.Attributes attributes) throws NamingException {
@@ -50,10 +48,10 @@ public class OrganizationDaoImpl {
             }
 
 
-            if (hasAttribute("nhsIDCode")) {
+            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)) {
                 organisation.addIdentifier()
                         .setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
-                        .setValue(getAttribute("nhsIDCode"));
+                        .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE));
             }
 
             if (hasAttribute("o")) {
@@ -62,32 +60,11 @@ public class OrganizationDaoImpl {
             if (hasAttribute("ou")) {
                 organisation.setName(getAttribute("ou"));
             }
-            if (organisation.hasName() && hasAttribute("nhsIDCode") && orgName.get(getAttribute("nhsIDCode"))!= null) {
-                    orgName.put(getAttribute("nhsIDCode"),organisation.getName());
+            if (organisation.hasName() && hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE) && orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE))!= null) {
+                    orgName.put(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE),organisation.getName());
             }
 
-            Period period = new Period();
-
-            if (hasAttribute("nhsOrgOpenDate")) {
-                organisation.setActive(true);
-                SimpleDateFormat
-                        format = new SimpleDateFormat("yyyymmdd");
-                try {
-                    period.setStart(format.parse(getAttribute("nhsOrgOpenDate")));
-                } catch (Exception ex) {
-
-                }
-            }
-            if (hasAttribute("nhsOrgCloseDate")) {
-                organisation.setActive(false);
-                SimpleDateFormat
-                        format = new SimpleDateFormat("yyyymmdd");
-                try {
-                    period.setEnd(format.parse(getAttribute("nhsOrgCloseDate")));
-                } catch (Exception ex) {
-
-                }
-            }
+            processDates(organisation);
 
             if (hasAttribute("mail")) {
                 organisation.addTelecom()
@@ -120,6 +97,13 @@ public class OrganizationDaoImpl {
             }
 
 
+           processAddress(organisation);
+           processParentOrg(organisation);
+
+            return organisation;
+        }
+
+        private void processAddress(Organization organisation) {
             Address address = organisation.addAddress();
             if (hasAttribute("postalCode")) {
                 address.setPostalCode(getAttribute("postalCode"));
@@ -133,33 +117,58 @@ public class OrganizationDaoImpl {
                 }
 
             }
-            if (hasAttribute("nhsParentOrgCode")) {
-                organisation.getPartOf().setReference("Organization/"+getAttribute("nhsParentOrgCode"));
+        }
+        private void processDates(Organization organisation) {
+            Period period = new Period();
+
+            if (hasAttribute("nhsOrgOpenDate")) {
+                organisation.setActive(true);
+                SimpleDateFormat
+                        format = new SimpleDateFormat("yyyymmdd");
+                try {
+                    period.setStart(format.parse(getAttribute("nhsOrgOpenDate")));
+                } catch (Exception ignore) {
+                    // No action
+                }
+            }
+            if (hasAttribute("nhsOrgCloseDate")) {
+                organisation.setActive(false);
+                SimpleDateFormat
+                        format = new SimpleDateFormat("yyyymmdd");
+                try {
+                    period.setEnd(format.parse(getAttribute("nhsOrgCloseDate")));
+                } catch (Exception ignore) {
+                        // No action
+                }
+            }
+
+        }
+
+        private void processParentOrg(Organization organisation) {
+            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)) {
+                organisation.getPartOf().setReference("Organization/"+getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE));
                 organisation.getPartOf().setIdentifier(
                         new Identifier().setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
-                                .setValue(getAttribute("nhsParentOrgCode"))
+                                .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE))
                 );
                 if (this.parent) {
 
-                    if (orgName.get(getAttribute("nhsParentOrgCode"))!= null) {
-                        organisation.getPartOf().setDisplay(orgName.get(getAttribute("nhsParentOrgCode")));
+                    if (orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE))!= null) {
+                        organisation.getPartOf().setDisplay(orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)));
                     } else {
-                        Organization parent = read(false, new IdType(getAttribute("nhsParentOrgCode")));
+                        Organization parentOrg = read(false, new IdType(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)));
 
-                        if (parent != null && parent.hasName()) {
-                            orgName.put(getAttribute("nhsParentOrgCode"),parent.getName());
-                            organisation.getPartOf().setDisplay(parent.getName());
+                        if (parentOrg != null && parentOrg.hasName()) {
+                            orgName.put(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE),parentOrg.getName());
+                            organisation.getPartOf().setDisplay(parentOrg.getName());
                         }
                     }
                 }
             }
-
-            return organisation;
         }
 
-        public Boolean hasAttribute(String attrib) {
-            if (attributes.get(attrib)!= null) return true;
-            return false;
+        public boolean hasAttribute(String attrib) {
+            return (attributes.get(attrib)!= null);
         }
 
         public String getAttribute(String attrib) {
@@ -177,9 +186,9 @@ public class OrganizationDaoImpl {
 
 
         log.info(internalId.getIdPart());
-        List<Organization> organisations = ldapTemplate.search("ou=Organisations", "(&(uniqueIdentifier="+internalId.getIdPart()+"))", new OrganizationAttributesMapper(getParent));
+        List<Organization> organisations = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_ORGANISATIONS, "(&(uniqueIdentifier="+internalId.getIdPart()+"))", new OrganizationAttributesMapper(getParent));
 
-        if (organisations.size()>0) {
+        if (!organisations.isEmpty()) {
             return organisations.get(0);
         }
         return null;
@@ -194,7 +203,6 @@ public class OrganizationDaoImpl {
                                      TokenParam type,
                                      TokenParam active) {
 
-        String base = "ou=Organisations";
         String ldapFilter = "";
         if (identifier != null) {
             ldapFilter = ldapFilter + "(nhsIDCode="+identifier.getValue()+")";
@@ -205,9 +213,10 @@ public class OrganizationDaoImpl {
                 ldapFilter = ldapFilter + "(|(ou=*" + name.getValue() + "*)(o=*" + name.getValue() + "*))";
                 log.info(ldapFilter);
             } else {
-                return null;
+                return Collections.emptyList();
             }
         }
+        String base = NHSDigitalLDAPSpineConstants.OU_ORGANISATIONS;
         if (partOf != null) {
             getParent= false; // Don't return partOf in the resources
             base = "uniqueIdentifier="+partOf.getValue() +", " + base;
@@ -235,12 +244,19 @@ public class OrganizationDaoImpl {
                 case "false":
                     ldapFilter = ldapFilter + "(nhsOrgCloseDate=*)";
                     break;
+                default:
+                    break;
             }
 
             log.info(ldapFilter);
         }
+        return runSearch(ldapFilter, getParent, active, base);
+    }
 
-        if (ldapFilter.isEmpty()) return null;
+    private List<Organization> runSearch(String ldapFilter, boolean getParent,
+                                          TokenParam active, String base) {
+
+        if (ldapFilter.isEmpty()) return Collections.emptyList();
         String ldapFilterOrg = "(&"+ldapFilter+")";
 
         List<Organization> orgs = ldapTemplate.search(base, ldapFilterOrg, new OrganizationAttributesMapper(getParent));
@@ -248,18 +264,21 @@ public class OrganizationDaoImpl {
         if (active != null) {
             List<Organization> nOrgs = new ArrayList<>();
 
-            for (Organization org : orgs)
-            switch (active.getValue()) {
-                case "true":
-                    if (org.getActive()) {
-                        nOrgs.add(org);
-                    }
-                    break;
-                case "false":
-                    if (!org.getActive()) {
-                        nOrgs.add(org);
-                    }
-                    break;
+            for (Organization org : orgs) {
+                switch (active.getValue()) {
+                    case "true":
+                        if (org.getActive()) {
+                            nOrgs.add(org);
+                        }
+                        break;
+                    case "false":
+                        if (!org.getActive()) {
+                            nOrgs.add(org);
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             return nOrgs;
         }

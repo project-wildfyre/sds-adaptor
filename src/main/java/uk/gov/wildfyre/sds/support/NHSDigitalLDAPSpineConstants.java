@@ -28,4 +28,10 @@ public final class NHSDigitalLDAPSpineConstants {
 
     public static final String OU_SERVICE = "ou=Services";
 
+    public static final String OU_ORGANISATIONS ="ou=Organisations";
+
+    public static final String NHS_PARENT_ORG_CODE ="nhsParentOrgCode";
+
+    public static final String GIVEN_NAME = "givenName";
+
 }
