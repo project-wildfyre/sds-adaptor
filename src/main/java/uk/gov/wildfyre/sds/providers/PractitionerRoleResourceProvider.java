@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.providers;
+package uk.gov.wildfyre.sds.providers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.annotation.IdParam;
@@ -11,11 +11,9 @@ import ca.uhn.fhir.rest.server.IResourceProvider;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Practitioner;
 import org.hl7.fhir.dstu3.model.PractitionerRole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.wildfyre.SDS.dao.PractitionerRoleDaoImpl;
+import uk.gov.wildfyre.sds.dao.PractitionerRoleDaoImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,8 +32,6 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
     PractitionerRoleDaoImpl practitionerRoleDao;
 
 
-    private static final Logger log = LoggerFactory.getLogger(PractitionerRoleResourceProvider.class);
-
     @Override
     public Class<PractitionerRole> getResourceType() {
         return PractitionerRole.class;
@@ -43,7 +39,7 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
 
 
     @Read
-    public PractitionerRole read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
+    public PractitionerRole read(HttpServletRequest request, @IdParam IdType internalId)  {
 
         return practitionerRoleDao.read(internalId);
 
@@ -56,7 +52,7 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
                                      @OptionalParam(name = PractitionerRole.SP_ORGANIZATION) ReferenceParam organisation
 
 
-    ) throws Exception {
+    )  {
 
         return practitionerRoleDao.search(identifier, practitioner, organisation);
     }

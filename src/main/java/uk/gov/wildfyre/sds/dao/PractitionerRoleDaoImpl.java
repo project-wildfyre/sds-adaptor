@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.dao;
+package uk.gov.wildfyre.sds.dao;
 
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
 
 import javax.naming.NamingException;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -63,47 +65,24 @@ public class PractitionerRoleDaoImpl {
                 country.setValue(code);
                 practitionerRole.addExtension(country);
             }
-            if (hasAttribute("nhsIDCode")) {
+            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)) {
                 practitionerRole.getOrganization().setReference("Organization/"+getAttribute("nhsIDCode"));
-                /*
-                Organization org = organizationDao.read(false, new IdType(getAttribute("nhsIDCode")));
-                if (org != null && org.hasName()) {
-                    practitionerRole.getPractitioner().setDisplay(org.getName());
-                }
 
-                 */
             }
-            if (hasAttribute("nhsRoles")) {
+            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ROLES)) {
                 CodeableConcept code = practitionerRole.addCode();
 
                 code.addCoding().setSystem("https://fhir.nhs.uk/STU3/CodeSystem/CareConnect-SDSJobRoleName-1");
 
-                if (hasAttribute("nhsRoles")) {
+                if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ROLES)) {
 
-                    String[] roles = getAttribute("nhsRoles").split(":");
+                    String[] roles = getAttribute(NHSDigitalLDAPSpineConstants.NHS_ROLES).split(":");
                     if (roles[2] != null) {
                         code.getCodingFirstRep().setDisplay(roles[2].replace("\"",""));
                     }
                 }
             }
-            practitionerRole.addIdentifier()
-                    .setSystem("https://fhir.nhs.uk/Id/sds-user-id")
-                    .setValue(getAttribute("uid"));
-            if (hasAttribute("nhsGNC")) {
-                if (getAttribute("nhsGNC").startsWith("G")) {
-                    practitionerRole.addIdentifier()
-                            .setSystem("https://fhir.hl7.org.uk/Id/gmp-number")
-                            .setValue(getAttribute("nhsGNC"));
-                }
-                if (getAttribute("nhsGNC").startsWith("C")) {
-                    practitionerRole.addIdentifier()
-                            .setSystem("https://fhir.hl7.org.uk/Id/gmc-number")
-                            .setValue(getAttribute("nhsGNC"));
-                }
-                practitionerRole.addIdentifier()
-                        .setSystem("urn:oid: 2.16.840.1.113883.12.10")
-                        .setValue(getAttribute("nhsGNC"));
-            }
+            addIdentifiers(practitionerRole);
             if (hasAttribute("o")) {
                 practitionerRole.getOrganization().setDisplay(getAttribute("o"));
             }
@@ -112,9 +91,27 @@ public class PractitionerRoleDaoImpl {
             return practitionerRole;
         }
 
-        public Boolean hasAttribute(String attrib) {
-            if (attributes.get(attrib)!= null) return true;
-            return false;
+        private void addIdentifiers(PractitionerRole practitionerRole) {
+            practitionerRole.addIdentifier()
+                    .setSystem("https://fhir.nhs.uk/Id/sds-user-id")
+                    .setValue(getAttribute("uid"));
+            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_GNC)) {
+                if (getAttribute(NHSDigitalLDAPSpineConstants.NHS_GNC).startsWith("G")) {
+                    practitionerRole.addIdentifier()
+                            .setSystem("https://fhir.hl7.org.uk/Id/gmp-number")
+                            .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_GNC));
+                }
+                if (getAttribute("nhsGNC").startsWith("C")) {
+                    practitionerRole.addIdentifier()
+                            .setSystem("https://fhir.hl7.org.uk/Id/gmc-number")
+                            .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_GNC));
+                }
+
+            }
+        }
+
+        public boolean hasAttribute(String attrib) {
+            return (attributes.get(attrib)!= null);
         }
 
         public String getAttribute(String attrib) {
@@ -133,7 +130,7 @@ public class PractitionerRoleDaoImpl {
         log.info(internalId.getIdPart());
         List<PractitionerRole> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uniqueIdentifier="+internalId.getIdPart()+"))", new PractitionerRoleAttributesMapper());
 
-        if (practitioners.size()>0) {
+        if (!practitioners.isEmpty()) {
             return practitioners.get(0);
         }
         return null;
@@ -145,7 +142,7 @@ public class PractitionerRoleDaoImpl {
 
         if (identifier != null) {
             log.info(identifier.getValue());
-            ldapFilter = ldapFilter + "(nhsGNC="+identifier.getValue()+")";
+            ldapFilter = ldapFilter + "("+NHSDigitalLDAPSpineConstants.NHS_GNC+"="+identifier.getValue()+")";
         }
         if (practitioner != null) {
 
@@ -165,18 +162,20 @@ public class PractitionerRoleDaoImpl {
 
                         ldapFilter = ldapFilter + "(sn=*"+practitioner.getValue()+"*)";
                         break;
+                    default :
+                        break;
                 }
             }
         }
         if (organisation != null) {
             log.info(organisation.getValue());
-            ldapFilter = ldapFilter + "(nhsIdCode="+organisation.getValue()+")";
+            ldapFilter = ldapFilter + "("+NHSDigitalLDAPSpineConstants.NHS_ID_CODE+"="+organisation.getValue()+")";
         }
         if (ldapFilter.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         ldapFilter = "(&(objectclass=nhsOrgPerson)"+ldapFilter+")";
-        log.info("ldapFilter= "+ldapFilter);
+        log.info("ldapFilter= {}", ldapFilter);
         return ldapTemplate.search("ou=People", ldapFilter, new PractitionerRoleAttributesMapper());
     }
 

@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS;
+package uk.gov.wildfyre.sds;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -8,14 +8,9 @@ import ca.uhn.fhir.rest.server.HardcodedServerAddressStrategy;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.interceptor.CorsInterceptor;
 import ca.uhn.fhir.util.VersionUtil;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.cors.CorsConfiguration;
-
-import uk.gov.wildfyre.SDS.providers.*;
-import uk.gov.wildfyre.SDS.interceptor.ServerInterceptor;
-
-
+import uk.gov.wildfyre.sds.providers.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -26,14 +21,13 @@ import java.util.List;
 import java.util.TimeZone;
 
 @WebServlet(urlPatterns = {"/*"}, displayName = "FHIR Server")
-public class RestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
+public class CustomRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
 
     private static final long serialVersionUID = 1L;
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RestfulServer.class);
 
-    private ApplicationContext appCtx;
+    private final ApplicationContext appCtx;
 
-    RestfulServer(ApplicationContext context) {
+    CustomRestfulServer(ApplicationContext context) {
         this.appCtx = context;
     }
 
@@ -98,11 +92,7 @@ public class RestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
         CorsInterceptor interceptor = new CorsInterceptor(config);
         getInterceptorService().registerInterceptor(interceptor);
 
-        ServerInterceptor loggingInterceptor = new ServerInterceptor(log);
-        getInterceptorService().registerInterceptor(loggingInterceptor);
 
-        //ServerInterceptor gatewayInterceptor = new ServerInterceptor(log);
-        //registerInterceptor(gatewayInterceptor);
 
         FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
         pp.setDefaultPageSize(10);
@@ -112,8 +102,6 @@ public class RestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
         setDefaultPrettyPrint(true);
         setDefaultResponseEncoding(EncodingEnum.JSON);
 
-        FhirContext ctx = getFhirContext();
-        // Remove as believe due to issues on docker ctx.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
     }
 
 

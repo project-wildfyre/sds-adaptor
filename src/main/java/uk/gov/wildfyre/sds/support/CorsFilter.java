@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.support;
+package uk.gov.wildfyre.sds.support;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +14,7 @@ public class CorsFilter implements Filter {
 
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-        log.debug("Cors Filter: "+request.getMethod());
+        log.debug("Cors Filter: {}", request.getMethod());
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
@@ -26,9 +26,11 @@ public class CorsFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) {
+        // No action
     }
 
     @Override
     public void destroy() {
+        // No action
     }
 }

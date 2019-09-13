@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.providers;
+package uk.gov.wildfyre.sds.providers;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.annotation.IdParam;
@@ -10,11 +10,9 @@ import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Endpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.wildfyre.SDS.dao.EndpointDaoImpl;
+import uk.gov.wildfyre.sds.dao.EndpointDaoImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -27,13 +25,9 @@ public class EndpointResourceProvider implements IResourceProvider {
     @Autowired
     FhirContext ctx;
 
-
-
     @Autowired
     EndpointDaoImpl endpointDao;
 
-
-    private static final Logger log = LoggerFactory.getLogger(EndpointResourceProvider.class);
 
     @Override
     public Class<Endpoint> getResourceType() {
@@ -42,7 +36,7 @@ public class EndpointResourceProvider implements IResourceProvider {
 
 
     @Read
-    public Endpoint read(HttpServletRequest request, @IdParam IdType internalId) throws Exception {
+    public Endpoint read(HttpServletRequest request, @IdParam IdType internalId) {
 
         return endpointDao.read(internalId);
 
@@ -54,7 +48,7 @@ public class EndpointResourceProvider implements IResourceProvider {
                                  @OptionalParam(name = Endpoint.SP_ORGANIZATION) ReferenceParam organisation,
 
                                  @OptionalParam(name = "interaction")  TokenParam interaction
-    ) throws Exception {
+    )  {
 
 
         return endpointDao.search(identifier, organisation,interaction);

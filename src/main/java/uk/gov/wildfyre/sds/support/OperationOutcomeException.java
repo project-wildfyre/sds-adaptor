@@ -1,10 +1,10 @@
-package uk.gov.wildfyre.SDS.support;
+package uk.gov.wildfyre.sds.support;
 
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.OperationOutcome;
 
 public class OperationOutcomeException extends Exception {
-    private OperationOutcome outcome;
+    private final OperationOutcome outcome;
 
     public OperationOutcomeException(OperationOutcome operationOutcome) {
         super();
@@ -29,7 +29,5 @@ public class OperationOutcomeException extends Exception {
         return outcome;
     }
 
-    public void setOutcome(OperationOutcome outcome) {
-        this.outcome = outcome;
-    }
+
 }

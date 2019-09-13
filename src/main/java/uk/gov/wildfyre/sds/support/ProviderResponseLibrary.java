@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.support;
+package uk.gov.wildfyre.sds.support;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.MethodOutcome;
@@ -11,6 +11,9 @@ import java.io.*;
 
 public class ProviderResponseLibrary {
     private static final Logger log = LoggerFactory.getLogger(ProviderResponseLibrary.class);
+
+    private ProviderResponseLibrary () {
+    }
 
     public static MethodOutcome handleException(MethodOutcome method, Exception ex) {
         if (ex instanceof OperationOutcomeException) {
@@ -31,7 +34,7 @@ public class ProviderResponseLibrary {
 
             }
             if (ex.getCause() != null) {
-                log.error(ex.getCause().toString());
+                log.error("Cause {}",ex.getCause());
             }
             method.setCreated(false);
             method.setOperationOutcome(OperationOutcomeFactory.createOperationOutcome(ex.getMessage()));
@@ -40,15 +43,16 @@ public class ProviderResponseLibrary {
         return method;
     }
 
-    public static void createException(FhirContext ctx, IBaseResource resource) throws Exception {
+    public static void createException(FhirContext ctx, IBaseResource resource) {
         if (resource instanceof OperationOutcome)
         {
             OperationOutcome operationOutcome = (OperationOutcome) resource;
-            log.info("Sever Returned: "+ctx.newJsonParser().encodeResourceToString(operationOutcome));
+            String json = ctx.newJsonParser().encodeResourceToString(operationOutcome);
+            log.info("Sever Returned: {}", json);
 
             OperationOutcomeFactory.convertToException(operationOutcome);
         } else {
-            throw new InternalErrorException("Server Error",(OperationOutcome) resource);
+            throw new InternalErrorException("Server Error");
         }
     }
 
@@ -66,15 +70,15 @@ public class ProviderResponseLibrary {
             }
         } else
         if (message instanceof String) {
-            log.trace("RESPONSE String = "+(String) message);
+            log.trace("RESPONSE String = {}", message);
             try {
                 resource = ctx.newXmlParser().parseResource((String) message);
             } catch (Exception ex) {
                 resource = ctx.newJsonParser().parseResource((String) message);
             }
-            log.trace("RETURNED String Resource "+resource.getClass().getSimpleName());
+            log.trace("RETURNED String Resource {}",resource.getClass().getSimpleName());
         } else {
-            log.info("MESSAGE TYPE "+message.getClass());
+            log.info("MESSAGE TYPE {}", message.getClass());
         }
         return resource;
     }

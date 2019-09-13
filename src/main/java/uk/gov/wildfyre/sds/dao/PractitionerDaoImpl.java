@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.dao;
+package uk.gov.wildfyre.sds.dao;
 
 
 import ca.uhn.fhir.rest.param.StringParam;

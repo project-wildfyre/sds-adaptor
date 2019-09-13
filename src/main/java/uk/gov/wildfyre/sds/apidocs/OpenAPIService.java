@@ -1,4 +1,4 @@
-package uk.gov.wildfyre.SDS.apidocs;
+package uk.gov.wildfyre.sds.apidocs;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.apache.commons.io.IOUtils;
@@ -12,10 +12,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.wildfyre.SDS.HapiProperties;
+import uk.gov.wildfyre.sds.HapiProperties;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -27,8 +26,6 @@ public class OpenAPIService {
 
     // Swagger guide https://swagger.io/docs/specification/2-0/basic-structure/
 
-    @Autowired
-    private ApplicationContext appCtx;
 
     @Autowired
     private FhirContext ctx;
@@ -39,9 +36,13 @@ public class OpenAPIService {
     @Value("${server.servlet.context-path}")
     private String serverPath;
 
+    private static String fhirVersion = "/STU3/";
+
+    JSONObject paths = null;
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OpenAPIService.class);
 
-    @RequestMapping("/apidocs")
+    @GetMapping(path = "/apidocs")
     public String greeting() {
         HttpClient client = getHttpClient();
 
@@ -54,15 +55,15 @@ public class OpenAPIService {
         try {
 
             HttpResponse response = client.execute(request);
-            log.trace("Response "+response.getStatusLine().toString());
+            log.trace("Response {}", response.getStatusLine());
             if (response.getStatusLine().toString().contains("200")) {
 
                 String encoding = "UTF-8";
                 String body = IOUtils.toString(response.getEntity().getContent(), encoding);
-                log.trace(body);
+                log.trace("{}",body);
 
                 CapabilityStatement capabilityStatement = (CapabilityStatement) ctx.newJsonParser().parseResource(body);
-                log.trace("Parsing");
+
                 return parseConformanceStatement(capabilityStatement);
 
             }
@@ -70,7 +71,7 @@ public class OpenAPIService {
         } catch (UnknownHostException e) {
             log.error("Host not known");
         } catch (IOException ex) {
-            log.error("IO Exception " + ex.getMessage());
+            log.error("IO Exception {}", ex.getMessage());
         }
 
         return "Unable to resolve swagger/openapi documentation from " + apidocs;
@@ -91,7 +92,7 @@ public class OpenAPIService {
         info.put("basePath",serverPath +"/STU3");
         info.put("schemes", new JSONArray().put("http"));
 
-        JSONObject paths = new JSONObject();
+        paths = new JSONObject();
         obj.put("paths",paths);
 
         JSONObject resObjC = new JSONObject();
@@ -114,61 +115,24 @@ public class OpenAPIService {
             for (CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent : rest.getResource()) {
 
                 for (CapabilityStatement.ResourceInteractionComponent interactionComponent : resourceComponent.getInteraction()) {
-                    JSONObject resObj = null;
+
                     switch (interactionComponent.getCode()) {
                         case READ:
-                            if (pathMap.containsKey(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}")) {
-                                resObj = (JSONObject) pathMap.get(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}");
-                            } else {
-                                resObj = new JSONObject();
-                                pathMap.put(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                                paths.put(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                            }
-                            resObj.put("get",getId(resourceComponent, interactionComponent));
+                            processMethodId("get", pathMap, resourceComponent, interactionComponent);
                             break;
                         case SEARCHTYPE:
-                            if (pathMap.containsKey(serverPath + "/STU3/"+resourceComponent.getType())) {
-                                resObj = (JSONObject) pathMap.get(serverPath + "/STU3/"+resourceComponent.getType());
-                            } else {
-                                resObj = new JSONObject();
-                                pathMap.put(serverPath + "/STU3/"+resourceComponent.getType(),resObj);
-                                paths.put(serverPath + "/STU3/"+resourceComponent.getType(),resObj);
-                            }
-                            resObj.put("get",getSearch(resourceComponent, interactionComponent));
+                            processMethodType("get", pathMap, resourceComponent, interactionComponent);
                             break;
                         case DELETE:
-                            if (pathMap.containsKey(serverPath +"/STU3/"+resourceComponent.getType()+"/{id}")) {
-                                resObj = (JSONObject) pathMap.get(serverPath +"/STU3/"+resourceComponent.getType()+"/{id}");
-                            } else {
-                                resObj = new JSONObject();
-                                pathMap.put(serverPath +"/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                                paths.put(serverPath +"/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                            }
-                            resObj.put("delete",getId(resourceComponent, interactionComponent));
+                            processMethodId("delete", pathMap, resourceComponent, interactionComponent);
                             break;
                         case UPDATE:
-                            if (pathMap.containsKey(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}")) {
-                                resObj = (JSONObject) pathMap.get(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}");
-                            } else {
-                                resObj = new JSONObject();
-                                pathMap.put(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                                paths.put(serverPath + "/STU3/"+resourceComponent.getType()+"/{id}",resObj);
-                            }
-                            resObj.put("put",getId(resourceComponent, interactionComponent));
+                            processMethodId("put", pathMap, resourceComponent, interactionComponent);
                             break;
                         case CREATE:
-
-                            if (pathMap.containsKey(serverPath + "/STU3/"+resourceComponent.getType())) {
-                                resObj = (JSONObject) pathMap.get(serverPath + "/STU3/"+resourceComponent.getType());
-                            } else {
-                                resObj = new JSONObject();
-                                pathMap.put(serverPath + "/STU3/"+resourceComponent.getType(),resObj);
-                                paths.put(serverPath + "/STU3/"+resourceComponent.getType(),resObj);
-                            }
-
-                            resObj.put("post",getSearch(resourceComponent, interactionComponent));
+                            processMethodType("post", pathMap, resourceComponent, interactionComponent);
                             break;
-
+                        default:
                     }
                 }
             }
@@ -178,7 +142,33 @@ public class OpenAPIService {
         return retStr;
     }
 
+    private void processMethodId(String method, Map pathMap,
+                                 CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent,
+                                 CapabilityStatement.ResourceInteractionComponent interactionComponent) {
+        JSONObject resObj = null;
+        if (pathMap.containsKey(serverPath + fhirVersion+resourceComponent.getType()+"/{id}")) {
+            resObj = (JSONObject) pathMap.get(serverPath + fhirVersion+resourceComponent.getType()+"/{id}");
+        } else {
+            resObj = new JSONObject();
+            pathMap.put(serverPath + fhirVersion+resourceComponent.getType()+"/{id}",resObj);
+            paths.put(serverPath + fhirVersion+resourceComponent.getType()+"/{id}",resObj);
+        }
+        resObj.put(method,getId(resourceComponent, interactionComponent));
+    }
+    private void processMethodType(String method, Map pathMap,
+                                   CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent,
+                                   CapabilityStatement.ResourceInteractionComponent interactionComponent) {
+        JSONObject resObj = null;
+        if (pathMap.containsKey(serverPath + fhirVersion+resourceComponent.getType())) {
+            resObj = (JSONObject) pathMap.get(serverPath + fhirVersion+resourceComponent.getType());
+        } else {
+            resObj = new JSONObject();
+            pathMap.put(serverPath + fhirVersion+resourceComponent.getType(),resObj);
+            paths.put(serverPath + fhirVersion+resourceComponent.getType(),resObj);
+        }
+        resObj.put(method,getSearch(resourceComponent, interactionComponent));
 
+    }
 
 
     private JSONObject getSearch(CapabilityStatement.CapabilityStatementRestResourceComponent resourceComponent,
@@ -186,7 +176,7 @@ public class OpenAPIService {
         JSONObject opObj = new JSONObject();
 
         opObj.put("description","For detailed description see: "
-         +"<a href=\"https://hl7.org/fhir/stu3/"+resourceComponent.getType()+".html\" target=\"_blank\">FHIR "+resourceComponent.getType()+"</a> ");
+                +"<a href=\"https://hl7.org/fhir/stu3/"+resourceComponent.getType()+".html\" target=\"_blank\">FHIR "+resourceComponent.getType()+"</a> ");
         JSONArray c = new JSONArray();
         c.put("application/fhir+json");
         c.put("application/fhir+xml");
@@ -207,8 +197,8 @@ public class OpenAPIService {
                 parms.put("in", "query");
                 parms.put("description", search.getDocumentation());
                 parms.put("required", false);
-               // parms.put("schema", new JSONObject()
-                       parms.put("type", "string");
+                // parms.put("schema", new JSONObject()
+                parms.put("type", "string");
             }
         }
         if (interactionComponent.getCode().equals(CapabilityStatement.TypeRestfulInteraction.CREATE)) {
@@ -219,8 +209,8 @@ public class OpenAPIService {
             parm.put("in", "body");
             parm.put("description", "The resource ");
             parm.put("required", true);
-           // parm.put("schema",  new JSONObject()
-                    parm.put("type","object");
+            // parm.put("schema",  new JSONObject()
+            parm.put("type","object");
             opObj.put("responses", getResponses());
         }
 
@@ -251,8 +241,8 @@ public class OpenAPIService {
         parm.put("in", "path");
         parm.put("description", "The logical id of the resource");
         parm.put("required", true);
-       // parm.put("schema",  new JSONObject()
-                parm.put("type","string");
+        // parm.put("schema",  new JSONObject()
+        parm.put("type","string");
         opObj.put("responses", getResponses());
         if (interactionComponent.getCode().equals(CapabilityStatement.TypeRestfulInteraction.UPDATE)) {
 
@@ -263,7 +253,7 @@ public class OpenAPIService {
             parm.put("description", "The resource ");
             parm.put("required", true);
             //parm.put("schema",  new JSONObject()
-                    parm.put("type","object");
+            parm.put("type","object");
             opObj.put("responses", getResponses());
         }
         return opObj;
@@ -283,7 +273,6 @@ public class OpenAPIService {
     }
 
     private HttpClient getHttpClient() {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
-        return httpClient;
+        return HttpClientBuilder.create().build();
     }
 }
