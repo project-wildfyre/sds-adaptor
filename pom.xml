@@ -6,39 +6,26 @@
 
     <groupId>uk.gov.wildfyre</groupId>
     <artifactId>sds-adaptor</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>5.7.0-SNAPSHOT</version>
     <name>sds-adaptor</name>
 
-
-
     <properties>
+        <java.version>1.8</java.version>
+        <kotlin.version>1.5.31</kotlin.version>
+        <fhir.version>5.7.0</fhir.version>
+        <swagger_version>2.1.12</swagger_version>
+        <parser_version>2.0.30</parser_version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot-version>2.1.1.RELEASE</spring-boot-version>
-        <hapi-fhir-version>4.0.3</hapi-fhir-version>
-        <care-connect-version>3.5.4</care-connect-version>
-        <camel-version>2.24.0</camel-version>
         <hawtio.version>2.5.0</hawtio.version>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.1.RELEASE</version>
+        <version>2.5.9</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
-
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Spring Boot BOM -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot-version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
 
 
 
@@ -108,17 +95,7 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
 
         <!-- JDK 11 inlcudes -->
         <dependency>
@@ -139,12 +116,12 @@
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-base</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-server</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -168,44 +145,27 @@
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-client</artifactId>
-            <version>${hapi-fhir-version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-dstu3</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-structures-r4</artifactId>
-            <version>${hapi-fhir-version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ca.uhn.hapi.fhir</groupId>
-            <artifactId>hapi-fhir-structures-dstu2</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
         </dependency>
 
 
-        <dependency>
-        <groupId>ca.uhn.hapi.fhir</groupId>
-        <artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
-        <version>${hapi-fhir-version}</version>
-    </dependency>
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation</artifactId>
-            <version>${hapi-fhir-version}</version>
+            <version>${fhir.version}</version>
         </dependency>
 
 

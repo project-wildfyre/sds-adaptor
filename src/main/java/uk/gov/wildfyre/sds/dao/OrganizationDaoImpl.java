@@ -3,14 +3,14 @@ package uk.gov.wildfyre.sds.dao;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
-import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
+import uk.gov.wildfyre.sds.support.NHSDigitalConstants;
 
 import javax.naming.NamingException;
 import java.text.SimpleDateFormat;
@@ -48,10 +48,10 @@ public class OrganizationDaoImpl {
             }
 
 
-            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)) {
+            if (hasAttribute(NHSDigitalConstants.NHS_ID_CODE)) {
                 organisation.addIdentifier()
                         .setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
-                        .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE));
+                        .setValue(getAttribute(NHSDigitalConstants.NHS_ID_CODE));
             }
 
             if (hasAttribute("o")) {
@@ -60,8 +60,8 @@ public class OrganizationDaoImpl {
             if (hasAttribute("ou")) {
                 organisation.setName(getAttribute("ou"));
             }
-            if (organisation.hasName() && hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE) && orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE))!= null) {
-                    orgName.put(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE),organisation.getName());
+            if (organisation.hasName() && hasAttribute(NHSDigitalConstants.NHS_ID_CODE) && orgName.get(getAttribute(NHSDigitalConstants.NHS_ID_CODE))!= null) {
+                    orgName.put(getAttribute(NHSDigitalConstants.NHS_ID_CODE),organisation.getName());
             }
 
             processDates(organisation);
@@ -145,21 +145,21 @@ public class OrganizationDaoImpl {
         }
 
         private void processParentOrg(Organization organisation) {
-            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)) {
-                organisation.getPartOf().setReference("Organization/"+getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE));
+            if (hasAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE)) {
+                organisation.getPartOf().setReference("Organization/"+getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE));
                 organisation.getPartOf().setIdentifier(
                         new Identifier().setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
-                                .setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE))
+                                .setValue(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE))
                 );
                 if (this.parent) {
 
-                    if (orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE))!= null) {
-                        organisation.getPartOf().setDisplay(orgName.get(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)));
+                    if (orgName.get(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE))!= null) {
+                        organisation.getPartOf().setDisplay(orgName.get(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE)));
                     } else {
-                        Organization parentOrg = read(false, new IdType(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE)));
+                        Organization parentOrg = read(false, new IdType(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE)));
 
                         if (parentOrg != null && parentOrg.hasName()) {
-                            orgName.put(getAttribute(NHSDigitalLDAPSpineConstants.NHS_PARENT_ORG_CODE),parentOrg.getName());
+                            orgName.put(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE),parentOrg.getName());
                             organisation.getPartOf().setDisplay(parentOrg.getName());
                         }
                     }
@@ -186,7 +186,7 @@ public class OrganizationDaoImpl {
 
 
         log.info(internalId.getIdPart());
-        List<Organization> organisations = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_ORGANISATIONS, "(&(uniqueIdentifier="+internalId.getIdPart()+"))", new OrganizationAttributesMapper(getParent));
+        List<Organization> organisations = ldapTemplate.search(NHSDigitalConstants.OU_ORGANISATIONS, "(&(uniqueIdentifier="+internalId.getIdPart()+"))", new OrganizationAttributesMapper(getParent));
 
         if (!organisations.isEmpty()) {
             return organisations.get(0);
@@ -216,7 +216,7 @@ public class OrganizationDaoImpl {
                 return Collections.emptyList();
             }
         }
-        String base = NHSDigitalLDAPSpineConstants.OU_ORGANISATIONS;
+        String base = NHSDigitalConstants.OU_ORGANISATIONS;
         if (partOf != null) {
             getParent= false; // Don't return partOf in the resources
             base = "uniqueIdentifier="+partOf.getValue() +", " + base;

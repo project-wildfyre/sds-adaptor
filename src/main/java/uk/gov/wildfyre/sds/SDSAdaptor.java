@@ -35,13 +35,15 @@ public class SDSAdaptor {
 
     }
 
+
     @Bean
-    public ServletRegistrationBean servletRegistrationBean() {
-        ServletRegistrationBean registration = new ServletRegistrationBean(new CustomRestfulServer(context), "/STU3/*");
+    public ServletRegistrationBean servletRegistrationBean(FhirContext fhirContext) {
+        ServletRegistrationBean registration = new ServletRegistrationBean(new FHIRRestfulServer(context, fhirContext), "/FHIR/R4/*");
         registration.setName("FhirServlet");
         registration.setLoadOnStartup(1);
         return registration;
     }
+
 
     @Bean
     CorsConfigurationSource
@@ -54,7 +56,7 @@ public class SDSAdaptor {
     @Bean
     @Primary
     public FhirContext fhirContextBean() {
-        return FhirContext.forDstu3();
+        return FhirContext.forR4();
     }
 
 

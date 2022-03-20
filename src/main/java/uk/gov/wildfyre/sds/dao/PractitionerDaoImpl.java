@@ -3,17 +3,17 @@ package uk.gov.wildfyre.sds.dao;
 
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import org.hl7.fhir.dstu3.model.HumanName;
-import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Practitioner;
-import org.hl7.fhir.dstu3.model.PractitionerRole;
+import org.hl7.fhir.r4.model.HumanName;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Practitioner;
+import org.hl7.fhir.r4.model.PractitionerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
-import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
+import uk.gov.wildfyre.sds.support.NHSDigitalConstants;
 
 import javax.naming.NamingException;
 import java.util.Collections;
@@ -42,14 +42,14 @@ public class PractitionerDaoImpl {
             } else {
                 return null;
             }
-            if (hasAttribute("sn") || hasAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME)) {
+            if (hasAttribute("sn") || hasAttribute(NHSDigitalConstants.GIVEN_NAME)) {
                 HumanName name = practitioner.addName();
 
                 if (hasAttribute("sn")) {
                         name.setFamily(getAttribute("sn"));
                 }
-                if (hasAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME)) {
-                        name.addGiven(getAttribute(NHSDigitalLDAPSpineConstants.GIVEN_NAME));
+                if (hasAttribute(NHSDigitalConstants.GIVEN_NAME)) {
+                        name.addGiven(getAttribute(NHSDigitalConstants.GIVEN_NAME));
                 }
                 if (hasAttribute("personalTitle")) {
                     name.addPrefix(getAttribute("personalTitle"));
@@ -60,7 +60,7 @@ public class PractitionerDaoImpl {
             }
             if (hasAttribute("nhsOCSPRCode")) {
                 practitioner.addIdentifier()
-                        .setSystem("https://fhir.nhs.uk/Id/sds-user-id")
+                        .setSystem(NHSDigitalConstants.SDSUserId)
                         .setValue(getAttribute("nhsOCSPRCode"));
             }
 

@@ -1,8 +1,8 @@
 package uk.gov.wildfyre.sds.support;
 
-public final class NHSDigitalLDAPSpineConstants {
+public final class NHSDigitalConstants {
 
-    private NHSDigitalLDAPSpineConstants(){
+    private NHSDigitalConstants(){
 
     }
 
@@ -34,4 +34,14 @@ public final class NHSDigitalLDAPSpineConstants {
 
     public static final String GIVEN_NAME = "givenName";
 
+    public static final String ODSCode = "https://fhir.nhs.uk/Id/ods-organization-code";
+
+    public static final String SDSUserId = "https://fhir.nhs.uk/Id/sds-user-id";
+
+    public static final String SDSUserRoleProfileId = "https://fhir.nhs.uk/Id/sds-role-profile-id";
+
+    public static final String SDSRoleCode = "https://fhir.hl7.org.uk/CodeSystem/UKCore-SDSJobRoleName";
+
+    public static final String GMPNumber = "https://fhir.hl7.org.uk/Id/gmp-number";
+    public static final String GMCNumber = "https://fhir.hl7.org.uk/Id/gmc-number";
 }

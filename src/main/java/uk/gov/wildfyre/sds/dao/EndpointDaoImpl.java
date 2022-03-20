@@ -2,14 +2,14 @@ package uk.gov.wildfyre.sds.dao;
 
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
-import uk.gov.wildfyre.sds.support.NHSDigitalLDAPSpineConstants;
+import uk.gov.wildfyre.sds.support.NHSDigitalConstants;
 
 import javax.naming.NamingException;
 import java.util.Collections;
@@ -56,8 +56,8 @@ public class EndpointDaoImpl {
 
             SDS sds = new SDS();
 
-            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)) {
-                sds.setNhsIDCode(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE));
+            if (hasAttribute(NHSDigitalConstants.NHS_ID_CODE)) {
+                sds.setNhsIDCode(getAttribute(NHSDigitalConstants.NHS_ID_CODE));
             }
             if (hasAttribute("uniqueIdentifier")) {
                 sds.setASID(getAttribute("uniqueIdentifier"));
@@ -101,25 +101,25 @@ public class EndpointDaoImpl {
             }
 
             if (asid != null) {
-                endpoint.addIdentifier().setValue(asid).setSystem(NHSDigitalLDAPSpineConstants.IdentifierSystem.ASID);
+                endpoint.addIdentifier().setValue(asid).setSystem(NHSDigitalConstants.IdentifierSystem.ASID);
             }
             if (hasAttribute("nhsMHSPartyKey")) {
                 endpoint.addIdentifier().setValue(getAttribute("nhsMHSPartyKey")).setSystem("https://fhir.nhs.uk/Ids/nhsMHSPartyKey");
 
 
             }
-            if (hasAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)) {
+            if (hasAttribute(NHSDigitalConstants.NHS_ID_CODE)) {
                 endpoint.getManagingOrganization()
-                        .setReference("Organization/"+getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE))
+                        .setReference("Organization/"+getAttribute(NHSDigitalConstants.NHS_ID_CODE))
                         .setIdentifier(
-                                new Identifier().setValue(getAttribute(NHSDigitalLDAPSpineConstants.NHS_ID_CODE)).setSystem(NHSDigitalLDAPSpineConstants.IdentifierSystem.NHS_ID_CODE)
+                                new Identifier().setValue(getAttribute(NHSDigitalConstants.NHS_ID_CODE)).setSystem(NHSDigitalConstants.IdentifierSystem.NHS_ID_CODE)
                         );
 
             }
             if (hasAttribute("nhsMHsSN")) {
                 Coding code = new Coding();
                 code.setCode(getAttribute("nhsMHsSN"))
-                .setSystem(NHSDigitalLDAPSpineConstants.IdentifierSystem.NHS_MHS_SN);
+                .setSystem(NHSDigitalConstants.IdentifierSystem.NHS_MHS_SN);
 
                 endpoint.getConnectionType().addExtension(
                         new Extension()
@@ -131,7 +131,7 @@ public class EndpointDaoImpl {
 
                 Coding code = new Coding();
                 code.setCode(getAttribute("nhsMhsSvcIA"))
-                        .setSystem(NHSDigitalLDAPSpineConstants.IdentifierSystem.NHS_SVC_IA);
+                        .setSystem(NHSDigitalConstants.IdentifierSystem.NHS_SVC_IA);
 
                 endpoint.getConnectionType().addExtension(
                         new Extension()
@@ -170,19 +170,19 @@ public class EndpointDaoImpl {
 
 
         log.info(internalId.getIdPart());
-        List<Endpoint> endpoints = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_SERVICE, "(&(objectclass=nhsMhs)(uniqueIdentifier="+internalId.getIdPart()+"))", new EndpointAttributesMapper(null));
+        List<Endpoint> endpoints = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, "(&(objectclass=nhsMhs)(uniqueIdentifier="+internalId.getIdPart()+"))", new EndpointAttributesMapper(null));
 
         if (!endpoints.isEmpty()) {
             Endpoint endpoint = endpoints.get(0);
-            String filter =  "("+NHSDigitalLDAPSpineConstants.NHS_ID_CODE+ "=" + endpoint.getManagingOrganization().getReference() + ")";
+            String filter =  "("+ NHSDigitalConstants.NHS_ID_CODE+ "=" + endpoint.getManagingOrganization().getReference() + ")";
 
             filter = "(&(objectclass=nhsAs)" + filter + ")";
-            List<SDS> sds = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
+            List<SDS> sds = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
             if (!sds.isEmpty()) {
                 String asid = sds.get(0).getASID();
                 endpoint.addIdentifier()
                         .setValue(asid)
-                        .setSystem(NHSDigitalLDAPSpineConstants.IdentifierSystem.ASID);
+                        .setSystem(NHSDigitalConstants.IdentifierSystem.ASID);
             }
 
             return endpoint;
@@ -196,7 +196,7 @@ public class EndpointDaoImpl {
         //  nhsAs search
         String filter = "";
         if (identifier != null) {
-            if (identifier.getSystem()!=null && identifier.getSystem().equals(NHSDigitalLDAPSpineConstants.IdentifierSystem.ASID)) {
+            if (identifier.getSystem()!=null && identifier.getSystem().equals(NHSDigitalConstants.IdentifierSystem.ASID)) {
                 log.info(identifier.getValue());
                 filter =  filter + "(uniqueIdentifier=" + identifier.getValue() + ")";
             }
@@ -204,9 +204,9 @@ public class EndpointDaoImpl {
             if (organisation != null) {
                 log.info(organisation.getValue());
 
-                filter = filter + "("+NHSDigitalLDAPSpineConstants.NHS_ID_CODE+ "=" + organisation.getValue() + ")";
+                filter = filter + "("+ NHSDigitalConstants.NHS_ID_CODE+ "=" + organisation.getValue() + ")";
 
-                List<SDS> sds = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
+                List<SDS> sds = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
                 if (!sds.isEmpty()) {
                     asid = sds.get(0).getASID();
                     log.info(asid);
@@ -230,7 +230,7 @@ public class EndpointDaoImpl {
     }
     private List<Endpoint> runldapSearch(TokenParam identifier, ReferenceParam organisation, TokenParam interaction,  String filter) {
         String asid = null;
-        List<SDS> sds = ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
+        List<SDS> sds = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
         if (!sds.isEmpty()) {
             if (identifier !=null) {
                 organisation = new ReferenceParam().setValue(sds.get(0).getNhsIDCode());
@@ -244,7 +244,7 @@ public class EndpointDaoImpl {
         String ldapFilter = "";
 
         if (organisation != null) {
-            ldapFilter = ldapFilter + "("+NHSDigitalLDAPSpineConstants.NHS_ID_CODE+ "="+organisation.getValue()+")";
+            ldapFilter = ldapFilter + "("+ NHSDigitalConstants.NHS_ID_CODE+ "="+organisation.getValue()+")";
         }
         if (interaction != null) {
             ldapFilter = ldapFilter + "(nhsMhsSvcIA="+interaction.getValue()+")";
@@ -254,6 +254,6 @@ public class EndpointDaoImpl {
         if (ldapFilter.isEmpty()) return Collections.emptyList();
         ldapFilter = "(&(objectclass=nhsMhs)"+ldapFilter+")";
 
-        return ldapTemplate.search(NHSDigitalLDAPSpineConstants.OU_SERVICE, ldapFilter, new EndpointAttributesMapper(asid));
+        return ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, ldapFilter, new EndpointAttributesMapper(asid));
     }
 }

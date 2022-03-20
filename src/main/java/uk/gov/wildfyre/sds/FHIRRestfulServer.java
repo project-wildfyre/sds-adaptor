@@ -21,15 +21,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
-@WebServlet(urlPatterns = {"/*"}, displayName = "FHIR Server")
-public class CustomRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
+@WebServlet(urlPatterns = "/FHIR/R4/*", loadOnStartup = 1)
+public class FHIRRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
 
     private static final long serialVersionUID = 1L;
 
     private final ApplicationContext appCtx;
+    private final FhirContext fhirContext;
 
-    CustomRestfulServer(ApplicationContext context) {
+    FHIRRestfulServer(ApplicationContext context, FhirContext fhirContext) {
         this.appCtx = context;
+        this.fhirContext = fhirContext;
     }
 
 
@@ -44,9 +46,7 @@ public class CustomRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
         super.initialize();
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
-
-        FhirVersionEnum fhirVersion = FhirVersionEnum.DSTU3;
-        setFhirContext(new FhirContext(fhirVersion));
+        setFhirContext(fhirContext);
 
         setDefaultResponseEncoding(HapiProperties.getDefaultEncoding());
 
@@ -70,7 +70,6 @@ public class CustomRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
          */
         setETagSupport(HapiProperties.getEtagSupport());
         // Replace built in conformance provider (CapabilityStatement)
-        setServerConformanceProvider(new ConformanceProvider());
 
         setServerName(HapiProperties.getServerName());
         setServerVersion(HapiProperties.getSoftwareVersion());

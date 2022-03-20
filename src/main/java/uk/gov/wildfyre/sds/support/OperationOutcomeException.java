@@ -1,7 +1,7 @@
 package uk.gov.wildfyre.sds.support;
 
-import org.hl7.fhir.dstu3.model.CodeableConcept;
-import org.hl7.fhir.dstu3.model.OperationOutcome;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.OperationOutcome;
 
 public class OperationOutcomeException extends Exception {
     private final OperationOutcome outcome;
