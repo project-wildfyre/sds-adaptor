@@ -104,7 +104,7 @@ public class EndpointDaoImpl {
                 endpoint.addIdentifier().setValue(asid).setSystem(NHSDigitalConstants.IdentifierSystem.ASID);
             }
             if (hasAttribute("nhsMHSPartyKey")) {
-                endpoint.addIdentifier().setValue(getAttribute("nhsMHSPartyKey")).setSystem("https://fhir.nhs.uk/Ids/nhsMHSPartyKey");
+                endpoint.addIdentifier().setValue(getAttribute("nhsMHSPartyKey")).setSystem("https://fhir.nhs.uk/Id/nhsMhsPartyKey");
 
 
             }
@@ -112,7 +112,7 @@ public class EndpointDaoImpl {
                 endpoint.getManagingOrganization()
                         .setReference("Organization/"+getAttribute(NHSDigitalConstants.NHS_ID_CODE))
                         .setIdentifier(
-                                new Identifier().setValue(getAttribute(NHSDigitalConstants.NHS_ID_CODE)).setSystem(NHSDigitalConstants.IdentifierSystem.NHS_ID_CODE)
+                                new Identifier().setValue(getAttribute(NHSDigitalConstants.NHS_ID_CODE)).setSystem(NHSDigitalConstants.ODSCode)
                         );
 
             }
@@ -128,16 +128,7 @@ public class EndpointDaoImpl {
                 );
             }
             if (hasAttribute("nhsMhsSvcIA")) {
-
-                Coding code = new Coding();
-                code.setCode(getAttribute("nhsMhsSvcIA"))
-                        .setSystem(NHSDigitalConstants.IdentifierSystem.NHS_SVC_IA);
-
-                endpoint.getConnectionType().addExtension(
-                        new Extension()
-                                .setUrl("https://fhir.nhs.uk/Extension/nhsMhsSvcIA")
-                                .setValue(code)
-                );
+                endpoint.addIdentifier().setSystem(NHSDigitalConstants.IdentifierSystem.NHS_SVC_IA).setValue(getAttribute("nhsMhsSvcIA"));
             }
             if (hasAttribute("nhsEPInteractionType") && getAttribute("nhsEPInteractionType").equals("HL7")) {
                     endpoint.getConnectionType().setSystem("http://terminology.hl7.org/CodeSystem/endpoint-connection-type").setCode(getAttribute("hl7v3"));

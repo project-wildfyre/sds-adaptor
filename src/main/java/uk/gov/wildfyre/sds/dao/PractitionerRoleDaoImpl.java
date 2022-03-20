@@ -22,7 +22,7 @@ public class PractitionerRoleDaoImpl {
     private LdapTemplate ldapTemplate;
 
     @Autowired
-    private OrganizationDaoImpl organizationDao;
+    private PractitionerDaoImpl practitionerDao;
 
     private static final Logger log = LoggerFactory.getLogger(PractitionerRoleDaoImpl.class);
 
@@ -92,22 +92,16 @@ public class PractitionerRoleDaoImpl {
         }
 
         private void addIdentifiers(PractitionerRole practitionerRole) {
-            practitionerRole.getPractitioner().getIdentifier()
-                    .setSystem(NHSDigitalConstants.SDSUserId)
-                    .setValue(getAttribute("uid"));
 
-            if (hasAttribute(NHSDigitalConstants.NHS_GNC)) {
-                if (getAttribute(NHSDigitalConstants.NHS_GNC).startsWith("G")) {
-                    practitionerRole.getPractitioner().getIdentifier()
-                            .setSystem("https://fhir.hl7.org.uk/Id/gmp-number")
-                            .setValue(getAttribute(NHSDigitalConstants.GMPNumber));
+            List<Practitioner> practitioners = practitionerDao.search(new TokenParam().setValue(getAttribute("uid")),null,null);
+            practitionerRole.getPractitioner()
+                    .setReference("Practitioner/"+getAttribute("uid"));
+            if (practitioners.size()>0) {
+                for (Identifier identifier : practitioners.get(0).getIdentifier()) {
+                    if (!identifier.getValue().equals(getAttribute("uid"))) {
+                        practitionerRole.getPractitioner().setIdentifier(identifier);
+                    }
                 }
-                if (getAttribute("nhsGNC").startsWith("C")) {
-                    practitionerRole.getPractitioner().getIdentifier()
-                            .setSystem("https://fhir.hl7.org.uk/Id/gmc-number")
-                            .setValue(getAttribute(NHSDigitalConstants.GMCNumber));
-                }
-
             }
         }
 
@@ -129,6 +123,7 @@ public class PractitionerRoleDaoImpl {
     public PractitionerRole read(IdType internalId) {
 
         log.info(internalId.getIdPart());
+
         List<PractitionerRole> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uniqueIdentifier="+internalId.getIdPart()+"))", new PractitionerRoleAttributesMapper());
 
         if (!practitioners.isEmpty()) {

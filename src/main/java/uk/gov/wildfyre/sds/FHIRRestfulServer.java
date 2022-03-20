@@ -1,7 +1,6 @@
 package uk.gov.wildfyre.sds;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.rest.api.EncodingEnum;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.HardcodedServerAddressStrategy;
@@ -96,8 +95,8 @@ public class FHIRRestfulServer extends ca.uhn.fhir.rest.server.RestfulServer {
         getInterceptorService().registerInterceptor(loggingInterceptor);
 
 
-        FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(10);
-        pp.setDefaultPageSize(10);
+        FifoMemoryPagingProvider pp = new FifoMemoryPagingProvider(100);
+        pp.setDefaultPageSize(100);
         pp.setMaximumPageSize(100);
         setPagingProvider(pp);
 

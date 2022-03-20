@@ -51,7 +51,6 @@ public class PractitionerRoleResourceProvider implements IResourceProvider {
                                      @OptionalParam(name = PractitionerRole.SP_PRACTITIONER) ReferenceParam practitioner,
                                      @OptionalParam(name = PractitionerRole.SP_ORGANIZATION) ReferenceParam organisation
 
-
     )  {
 
         return practitionerRoleDao.search(identifier, practitioner, organisation);

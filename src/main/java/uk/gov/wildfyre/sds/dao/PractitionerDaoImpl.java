@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.wildfyre.sds.support.NHSDigitalConstants;
 
 import javax.naming.NamingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +40,9 @@ public class PractitionerDaoImpl {
             Practitioner practitioner = new Practitioner();
             if (hasAttribute("uid")) {
                 practitioner.setId(getAttribute("uid"));
+                practitioner.addIdentifier()
+                        .setSystem(NHSDigitalConstants.SDSUserId)
+                        .setValue(getAttribute("uid"));
             } else {
                 return null;
             }
@@ -58,10 +62,17 @@ public class PractitionerDaoImpl {
                     name.setText(getAttribute("cn"));
                 }
             }
-            if (hasAttribute("nhsOCSPRCode")) {
+
+            if (hasAttribute("nhsOCSPRCode") && getAttribute("nhsOCSPRCode").startsWith("G")) {
                 practitioner.addIdentifier()
-                        .setSystem(NHSDigitalConstants.SDSUserId)
+                        .setSystem(NHSDigitalConstants.GMPNumber)
                         .setValue(getAttribute("nhsOCSPRCode"));
+            }
+
+            if (hasAttribute(NHSDigitalConstants.NHS_CONSULTANT)) {
+                practitioner.addIdentifier()
+                        .setSystem(NHSDigitalConstants.GMCNumber)
+                        .setValue(getAttribute(NHSDigitalConstants.NHS_CONSULTANT));
             }
 
             return practitioner;
@@ -102,16 +113,17 @@ public class PractitionerDaoImpl {
         String ldapFilter = "";
         if (identifier != null) {
             log.info(identifier.getValue());
-            List<PractitionerRole> roles = practitionerRoleDao.search(identifier,null, null);
-            if (roles.isEmpty()) return Collections.emptyList();
-
-            PractitionerRole role = roles.get(0);
-            if (!role.hasPractitioner() || !role.getPractitioner().hasReference()) return Collections.emptyList();
-
-            String[] ids = role.getPractitioner().getReference().split("/");
-            if (ids[1]== null) return Collections.emptyList();
-            ldapFilter = ldapFilter + "(uid="+ids[1]+")";
-            log.info(ldapFilter);
+            /*
+            if (identifier.getValue().startsWith("C")) {
+               // This is wrong
+                ldapFilter = ldapFilter + "(nhsConsultant=*)";
+            } else if (identifier.getValue().startsWith("G")) {
+                // This is wrong
+                ldapFilter = ldapFilter + "(nhsOCSPRCode=*)";
+            } else {
+                ldapFilter = ldapFilter + "(uid="+identifier.getValue()+")";
+            }*/
+            ldapFilter = ldapFilter + "(uid="+identifier.getValue()+")";
         }
         if (surname != null) {
             log.info(surname.getValue());

@@ -10,13 +10,13 @@ public final class NHSDigitalConstants {
 
         private IdentifierSystem () {}
 
-        public static final String ASID =  "https://fhir.nhs.uk/Ids/ASID";
+        public static final String ASID =  "https://fhir.nhs.uk/Id/nhsSpineASID";
 
         public static final String NHS_ID_CODE = "https://fhir.nhs.uk/Ids/nhsIDCode";
 
         public static final String NHS_MHS_SN = "https://fhir.nhs.uk/Ids/nhsMHsSN";
 
-        public static final String NHS_SVC_IA = "https://fhir.nhs.uk/Ids/nhsMhsSvcIA";
+        public static final String NHS_SVC_IA = "https://fhir.nhs.uk/Id/nhsServiceInteractionId";
 
     }
 
@@ -25,6 +25,8 @@ public final class NHSDigitalConstants {
     public static final String NHS_ROLES = "nhsRoles";
 
     public static final String NHS_GNC = "nhsGNC";
+
+    public static final String NHS_CONSULTANT = "nhsConsultant";
 
     public static final String OU_SERVICE = "ou=Services";
 

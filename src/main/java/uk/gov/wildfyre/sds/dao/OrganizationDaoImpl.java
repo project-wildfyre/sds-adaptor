@@ -50,7 +50,7 @@ public class OrganizationDaoImpl {
 
             if (hasAttribute(NHSDigitalConstants.NHS_ID_CODE)) {
                 organisation.addIdentifier()
-                        .setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
+                        .setSystem(NHSDigitalConstants.ODSCode)
                         .setValue(getAttribute(NHSDigitalConstants.NHS_ID_CODE));
             }
 
@@ -148,7 +148,7 @@ public class OrganizationDaoImpl {
             if (hasAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE)) {
                 organisation.getPartOf().setReference("Organization/"+getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE));
                 organisation.getPartOf().setIdentifier(
-                        new Identifier().setSystem("https://fhir.nhs.uk/Id/ods-organization-code")
+                        new Identifier().setSystem(NHSDigitalConstants.ODSCode)
                                 .setValue(getAttribute(NHSDigitalConstants.NHS_PARENT_ORG_CODE))
                 );
                 if (this.parent) {
