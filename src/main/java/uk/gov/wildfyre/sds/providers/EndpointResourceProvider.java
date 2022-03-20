@@ -12,6 +12,7 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.wildfyre.sds.dao.EndpointDaoImpl;
+import uk.gov.wildfyre.sds.support.NHSDigitalConstants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -43,14 +44,25 @@ public class EndpointResourceProvider implements IResourceProvider {
 
     @Search
     public List<Endpoint> search(HttpServletRequest request,
-                                 @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam identifier,
-                                 @OptionalParam(name = Endpoint.SP_ORGANIZATION) ReferenceParam organisation,
-
-                                 @OptionalParam(name = "interaction")  TokenParam interaction
+                                 @OptionalParam(name = Endpoint.SP_IDENTIFIER)  TokenParam tokenParam,
+                                 @OptionalParam(name = Endpoint.SP_ORGANIZATION) ReferenceParam organisation
     )  {
+        TokenParam asid = null;
+        TokenParam interaction = null;
+        if (tokenParam != null) {
+            if (tokenParam.getSystem() != null) {
+                if (tokenParam.getSystem().equals(NHSDigitalConstants.IdentifierSystem.ASID)) {
+                    asid = tokenParam;
+                }
+                if (tokenParam.getSystem().equals(NHSDigitalConstants.IdentifierSystem.NHS_SVC_IA)) {
+                    interaction = tokenParam;
+                }
+            } else {
+                interaction = tokenParam;
+            }
+        }
 
-
-        return endpointDao.search(identifier, organisation,interaction);
+        return endpointDao.search(asid, organisation,interaction);
     }
 
 }

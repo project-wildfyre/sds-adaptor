@@ -28,6 +28,11 @@ public class PractitionerRoleDaoImpl {
 
     private class PractitionerRoleAttributesMapper implements AttributesMapper {
 
+        private Boolean read;
+        PractitionerRoleAttributesMapper(Boolean read){
+            this.read = read;
+        }
+
         javax.naming.directory.Attributes attributes;
         @Override
         public Object mapFromAttributes(javax.naming.directory.Attributes attributes) throws NamingException {
@@ -82,7 +87,9 @@ public class PractitionerRoleDaoImpl {
                     }
                 }
             }
-            addIdentifiers(practitionerRole);
+            practitionerRole.getPractitioner()
+                    .setReference("Practitioner/"+getAttribute("uid"));
+            if (this.read) addIdentifiers(practitionerRole);
             if (hasAttribute("o")) {
                 practitionerRole.getOrganization().setDisplay(getAttribute("o"));
             }
@@ -94,8 +101,7 @@ public class PractitionerRoleDaoImpl {
         private void addIdentifiers(PractitionerRole practitionerRole) {
 
             List<Practitioner> practitioners = practitionerDao.search(new TokenParam().setValue(getAttribute("uid")),null,null);
-            practitionerRole.getPractitioner()
-                    .setReference("Practitioner/"+getAttribute("uid"));
+
             if (practitioners.size()>0) {
                 for (Identifier identifier : practitioners.get(0).getIdentifier()) {
                     if (!identifier.getValue().equals(getAttribute("uid"))) {
@@ -124,7 +130,7 @@ public class PractitionerRoleDaoImpl {
 
         log.info(internalId.getIdPart());
 
-        List<PractitionerRole> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uniqueIdentifier="+internalId.getIdPart()+"))", new PractitionerRoleAttributesMapper());
+        List<PractitionerRole> practitioners = ldapTemplate.search("ou=People", "(&(objectclass=nhsOrgPerson)(uniqueIdentifier="+internalId.getIdPart()+"))", new PractitionerRoleAttributesMapper(true));
 
         if (!practitioners.isEmpty()) {
             return practitioners.get(0);
@@ -172,7 +178,7 @@ public class PractitionerRoleDaoImpl {
         }
         ldapFilter = "(&(objectclass=nhsOrgPerson)"+ldapFilter+")";
         log.info("ldapFilter= {}", ldapFilter);
-        return ldapTemplate.search("ou=People", ldapFilter, new PractitionerRoleAttributesMapper());
+        return ldapTemplate.search("ou=People", ldapFilter, new PractitionerRoleAttributesMapper(false));
     }
 
 }

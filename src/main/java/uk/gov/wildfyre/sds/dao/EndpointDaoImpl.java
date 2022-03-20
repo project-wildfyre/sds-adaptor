@@ -158,8 +158,6 @@ public class EndpointDaoImpl {
 
     public Endpoint read(IdType internalId) {
 
-
-
         log.info(internalId.getIdPart());
         List<Endpoint> endpoints = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, "(&(objectclass=nhsMhs)(uniqueIdentifier="+internalId.getIdPart()+"))", new EndpointAttributesMapper(null));
 
@@ -191,26 +189,25 @@ public class EndpointDaoImpl {
                 log.info(identifier.getValue());
                 filter =  filter + "(uniqueIdentifier=" + identifier.getValue() + ")";
             }
-        } else {
-            if (organisation != null) {
-                log.info(organisation.getValue());
-
-                filter = filter + "("+ NHSDigitalConstants.NHS_ID_CODE+ "=" + organisation.getValue() + ")";
-
-                List<SDS> sds = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
-                if (!sds.isEmpty()) {
-                    asid = sds.get(0).getASID();
-                    log.info(asid);
-                }
-            } else {
-                if (interaction != null) {
-                    filter = filter + "(nhsMhsSvcIA=" + interaction.getValue() + ")";
-                }
-            }
         }
+        if (organisation != null) {
+            log.info(organisation.getValue());
 
-        if (filter.isEmpty()) {
-            return Collections.emptyList();
+            filter = filter + "("+ NHSDigitalConstants.NHS_ID_CODE+ "=" + organisation.getValue() + ")";
+
+            List<SDS> sds = ldapTemplate.search(NHSDigitalConstants.OU_SERVICE, filter, new EndpointAsAttributesMapper());
+            if (!sds.isEmpty()) {
+                asid = sds.get(0).getASID();
+                log.info(asid);
+            }
+        } else {
+            if (interaction != null) {
+                filter = filter + "(nhsMhsSvcIA=" + interaction.getValue() + ")";
+            }
+
+            if (filter.isEmpty()) {
+                return Collections.emptyList();
+            }
         }
         filter = "(&(objectclass=nhsAs)" + filter + ")";
         log.info("nhsAs filter (&(objectclass=nhsAs)= {}", filter);
